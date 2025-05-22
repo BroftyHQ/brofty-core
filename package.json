@@ -1,0 +1,32 @@
+{
+  "name": "brofty-core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "compile": "tsc",
+    "dev": "yarn tsx watch .",
+    "start": "node ./dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BroftyHQ/brofty-core.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/BroftyHQ/brofty-core/issues"
+  },
+  "homepage": "https://github.com/BroftyHQ/brofty-core#readme",
+  "dependencies": {
+    "@apollo/server": "^4.12.1",
+    "graphql": "^16.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
