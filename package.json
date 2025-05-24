@@ -6,7 +6,9 @@
   "scripts": {
     "compile": "tsc",
     "dev": "yarn tsx watch .",
-    "start": "node ./dist/index.js"
+    "start": "node ./dist/index.js",
+    "prisma-generate": "prisma generate",
+    "prisma-push": "prisma db push && prisma generate"
   },
   "repository": {
     "type": "git",
@@ -22,10 +24,14 @@
   "homepage": "https://github.com/BroftyHQ/brofty-core#readme",
   "dependencies": {
     "@apollo/server": "^4.12.1",
-    "graphql": "^16.11.0"
+    "@prisma/client": "^6.8.2",
+    "firebase-admin": "^13.4.0",
+    "graphql": "^16.11.0",
+    "nanoid": "^5.1.5"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",
+    "prisma": "^6.8.2",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
