@@ -16,8 +16,11 @@ export default async function generate_response(
   let finalText = ``;
 
   const stream = await client.responses.create({
-    model: "gpt-4.1",
+    model: "o4-mini-2025-04-16",
     input: text,
+    reasoning:{
+      effort:"low"
+    },
     stream: true,
   });
   for await (const event of stream) {
@@ -42,6 +45,9 @@ export default async function generate_response(
           created_at: initial_response_time.toString(),
         },
       });
+    }else{
+      
+      
     }
   }
 
