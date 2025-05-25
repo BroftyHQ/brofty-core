@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "compile": "tsc && yarn prisma-generate",
+    "compile": "yarn prisma-generate && tsc",
     "dev": "yarn tsx watch .",
     "start": "tsx ./dist/index.js",
     "prisma-generate": "prisma generate",
