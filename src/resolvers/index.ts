@@ -32,7 +32,8 @@ const resolvers = {
         return {
           id: message.id,
           text: message.content,
-          by: message.user === user.email ? "You" : message.user,
+          by: message.by,
+          created_at: (message.createdAt).toString(),
         };
       });
     },
@@ -55,6 +56,7 @@ const resolvers = {
           createdAt: +new Date(),
           updatedAt: +new Date(),
           user: user.email,
+          by:"You"
         },
       });
       pubsub.publish("MESSGAE_STREAM", {
@@ -63,18 +65,21 @@ const resolvers = {
           by: "You",
           id: message.id,
           text: message.content,
+          created_at: (message.createdAt).toString(),
         },
       });
       const response_id = nanoid();
+      const initial_response_time = +new Date();
       pubsub.publish("MESSGAE_STREAM", {
         messageStream: {
           type: "NEW_MESSAGE",
           by: "AI",
           id: response_id,
           text: "",
+          created_at: initial_response_time.toString(),
         },
       });
-      generate_response(response_id, message.content, user.email);
+      generate_response(response_id,initial_response_time, message.content, user.email);
       return message;
     },
   },

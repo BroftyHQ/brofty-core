@@ -3,6 +3,7 @@ const typeDefs = `
     id: ID!
     text: String!
     by: String!
+    created_at: String!
   }
 
   type Query {
@@ -19,6 +20,7 @@ const typeDefs = `
     id: ID!
     text: String!
     by: String!
+    created_at: String
   }
 
   type Subscription {

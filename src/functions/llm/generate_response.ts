@@ -1,29 +1,45 @@
 import prisma from "../../db/prisma";
 import pubsub from "../../pubsub";
 
-export default async function generate_response(id, text, user) {
+import OpenAI from "openai";
+const client = new OpenAI({
+  apiKey:
+    "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",
+});
+
+export default async function generate_response(id, initial_response_time, text, user) {
   let finalText = ``;
-  for (let i = 0; i < 10; i++) {
-    setTimeout(() => {
+
+  const stream = await client.responses.create({
+    model: "gpt-4.1",
+    input: text,
+    stream: true,
+  });
+  for await (const event of stream) {
+    if (event.type == "response.output_text.delta") {
       pubsub.publish("MESSGAE_STREAM", {
         messageStream: {
           type: "APPEND_MESSAGE",
+          id,
+          text: event.delta,
           by: "AI",
-          id: id,
-          text: `Message ${i + 1}: Open sesame`,
+          created_at: initial_response_time.toString(),
         },
       });
-      finalText += `Message ${i + 1}: Open sesame\n`;
-    }, i * 1000);
+    } else if (event.type == "response.output_text.done") {
+      finalText += event.text;
+    }
   }
+
   // add to db
-  const message = await prisma.message.create({
+  await prisma.message.create({
     data: {
       id,
       content: finalText,
-      createdAt: +new Date(),
+      createdAt: initial_response_time,
       updatedAt: +new Date(),
       user,
+      by: "AI",
     },
   });
 }
