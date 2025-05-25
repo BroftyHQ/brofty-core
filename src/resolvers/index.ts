@@ -27,6 +27,7 @@ const resolvers = {
         orderBy: {
           createdAt: "desc",
         },
+        take: 100,
       });
       return messages.map((message) => {
         return {

@@ -7,7 +7,12 @@ const client = new OpenAI({
     "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",
 });
 
-export default async function generate_response(id, initial_response_time, text, user) {
+export default async function generate_response(
+  id,
+  initial_response_time,
+  text,
+  user
+) {
   let finalText = ``;
 
   const stream = await client.responses.create({
@@ -28,6 +33,15 @@ export default async function generate_response(id, initial_response_time, text,
       });
     } else if (event.type == "response.output_text.done") {
       finalText += event.text;
+      pubsub.publish("MESSGAE_STREAM", {
+        messageStream: {
+          type: "COMPLETE_MESSAGE",
+          id,
+          text: event.text,
+          by: "AI",
+          created_at: initial_response_time.toString(),
+        },
+      });
     }
   }
 
