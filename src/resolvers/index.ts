@@ -1,9 +1,15 @@
 import { nanoid } from "nanoid";
 import { AuthorizedGraphQLContext } from "../types/context";
 import { Message } from "../generated/prisma";
+import pubsub from "../pubsub";
+import prisma from "../db/prisma";
+import generate_response from "../functions/llm/generate_response";
 
 const resolvers = {
   Query: {
+    status: () => {
+      return "Server is running";
+    },
     getMessages: async (
       _parent: any,
       _args: any,
@@ -14,7 +20,7 @@ const resolvers = {
       if (!user) {
         throw new Error("User not authenticated");
       }
-      const messages: Message[] = await context.prisma.message.findMany({
+      const messages: Message[] = await prisma.message.findMany({
         where: {
           user: user.email,
         },
@@ -42,7 +48,7 @@ const resolvers = {
       if (!user) {
         throw new Error("User not authenticated");
       }
-      const message = await context.prisma.message.create({
+      const message = await prisma.message.create({
         data: {
           id: nanoid(),
           content: args.message,
@@ -51,7 +57,30 @@ const resolvers = {
           user: user.email,
         },
       });
+      pubsub.publish("MESSGAE_STREAM", {
+        messageStream: {
+          type: "NEW_MESSAGE",
+          by: "You",
+          id: message.id,
+          text: message.content,
+        },
+      });
+      const response_id = nanoid();
+      pubsub.publish("MESSGAE_STREAM", {
+        messageStream: {
+          type: "NEW_MESSAGE",
+          by: "AI",
+          id: response_id,
+          text: "",
+        },
+      });
+      generate_response(response_id, message.content, user.email);
       return message;
+    },
+  },
+  Subscription: {
+    messageStream: {
+      subscribe: () => pubsub.asyncIterableIterator(["MESSGAE_STREAM"]),
     },
   },
 };

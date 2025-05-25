@@ -24,10 +24,17 @@
   "homepage": "https://github.com/BroftyHQ/brofty-core#readme",
   "dependencies": {
     "@apollo/server": "^4.12.1",
+    "@as-integrations/express5": "^1.0.0",
+    "@graphql-tools/schema": "^10.0.23",
     "@prisma/client": "^6.8.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
     "graphql": "^16.11.0",
-    "nanoid": "^5.1.5"
+    "graphql-subscriptions": "^3.0.0",
+    "graphql-ws": "^6.0.5",
+    "nanoid": "^5.1.5",
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",

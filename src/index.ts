@@ -1,26 +1,97 @@
-import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
-import typeDefs from "./typedefs";
-import resolvers from "./resolvers";
-import {
-  AnonymousGraphQLContext,
-  AuthorizedGraphQLContext,
-} from "./types/context";
-import { firebaseAuthApp } from "./firebase";
-import { PrismaClient } from "./generated/prisma";
+// npm install @apollo/server @as-integrations/express5 express graphql cors
+import { ApolloServer } from '@apollo/server';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { expressMiddleware } from '@as-integrations/express5';
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import typeDefs from './typedefs';
+import resolvers from './resolvers';
+import { WebSocketServer } from 'ws';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+//@ts-ignore
+import { useServer } from 'graphql-ws/use/ws';
+import { AnonymousGraphQLContext, AuthorizedGraphQLContext } from './types/context';
+import { firebaseAuthApp } from './firebase';
 
-const server = new ApolloServer({
+interface MyContext {
+  token?: string;
+}
+
+// Required logic for integrating with Express
+const app = express();
+// Our httpServer handles incoming requests to our Express app.
+// Below, we tell Apollo Server to "drain" this httpServer,
+// enabling our servers to shut down gracefully.
+const httpServer = http.createServer(app);
+const schema = makeExecutableSchema({
   typeDefs,
   resolvers,
+})
+// Creating the WebSocket server
+const wsServer = new WebSocketServer({
+  // This is the `httpServer` we created in a previous step.
+  server: httpServer,
+  // Pass a different path here if app.use
+  // serves expressMiddleware at a different path
+  path: '/v1/subscriptions',
+});
+const serverCleanup = useServer({ schema }, wsServer);
+
+// Same ApolloServer initialization as before, plus the drain plugin
+// for our httpServer.
+const server = new ApolloServer<MyContext>({
+    schema,
+  plugins: [
+    // Proper shutdown for the HTTP server.
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+
+    // Proper shutdown for the WebSocket server.
+    {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await serverCleanup.dispose();
+          },
+        };
+      },
+    },
+  ],
+});
+// Ensure we wait for our server to start
+await server.start();
+
+const corsConfig = cors<cors.CorsRequest>({
+  maxAge: 86400,
+  origin: (origin: any, callback: any) => {
+    if (origin && origin === "http://localhost:3000") {
+      callback(null, true);
+      return;
+    } else if (origin && origin.endsWith(".brofty.com")) {
+      callback(null, true);
+      return;
+    } else if (origin && origin.endsWith(".vercel.app")) {
+      callback(null, true);
+      return;
+    } else {
+      callback(null, false);
+      return;
+    }
+  },
 });
 
-const prisma = new PrismaClient();
 
-const { url } = await startStandaloneServer(server as any, {
-  listen: { port: 4000 },
-  context: async ({ req }: { req: any }) => {
+// Set up our Express middleware to handle CORS, body parsing,
+// and our expressMiddleware function.
+app.use(
+  '/v1',
+  corsConfig,
+  express.json(),
+  // expressMiddleware accepts the same arguments:
+  // an Apollo Server instance and optional configuration options
+  expressMiddleware(server, {
+    context: async ({ req }: { req: any }) => {
     const contextIfNotAuthorized: AnonymousGraphQLContext = {
-      prisma,
     };
 
     if (req.body.operationName === "IntrospectionQuery") {
@@ -38,8 +109,7 @@ const { url } = await startStandaloneServer(server as any, {
             user: {
               email: "ssr.server@brofty.com",
               email_verified: payload.email_verified,
-            },
-            prisma,
+            }
           } as AuthorizedGraphQLContext;
         }
         return contextIfNotAuthorized;
@@ -49,12 +119,16 @@ const { url } = await startStandaloneServer(server as any, {
           email: payload.email,
           email_verified: payload.email_verified,
         },
-        prisma,
       } as AuthorizedGraphQLContext;
     } else {
       return contextIfNotAuthorized;
     }
   },
-});
+  }),
+);
 
-console.log(`🚀 Server ready at: ${url}`);
+// Modified server startup
+await new Promise<void>((resolve) =>
+  httpServer.listen({ port: 4000 }, resolve),
+);
+console.log(`🚀 Server ready at http://localhost:4000/`);
