@@ -18,9 +18,6 @@ export default async function generate_response(
   const stream = await client.responses.create({
     model: "o4-mini-2025-04-16",
     input: text,
-    reasoning:{
-      effort:"low"
-    },
     stream: true,
   });
   for await (const event of stream) {
