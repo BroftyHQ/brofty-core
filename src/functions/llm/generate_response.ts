@@ -46,8 +46,6 @@ export default async function generate_response(
         ${current_stm}
         `:""
     }
-
-    current user message: ${text}
     `,
     stream: true,
   });
