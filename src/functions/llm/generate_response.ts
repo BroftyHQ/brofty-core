@@ -17,7 +17,7 @@ async function get_stm(user){
   let final_stm = '';
   for await (const message of last_messages) {
     const parsedMessage = JSON.parse(message);
-    final_stm += `\n${parsedMessage.by}: ${parsedMessage.content}`;
+    final_stm += `\n\n${parsedMessage.by}: ${parsedMessage.content}`;
   }
   return final_stm;
 }
