@@ -31,11 +31,10 @@ export default async function generate_response(
   let finalText = ``;
   const current_stm = await get_stm(user);
   const stream = await client.responses.create({
-    model: "o4-mini-2025-04-16",
+    model: "gpt-4.1-mini-2025-04-14",
     input:`
     You are a helpful, concise assistant.
     You have access to the last couple of messages in this chat.
-    Use that short-term context to answer questions accurately and clearly. Do not assume missing information.
     Keep your responses focused and as brief as possible, unless the user requests detailed explanation.
     When responding with code, ensure it is correct and properly formatted.
     If you are unsure, say so honestly.
