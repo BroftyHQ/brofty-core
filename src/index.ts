@@ -96,7 +96,7 @@ app.get("/rest/v1/status", (req, res) => {
   redis.set("brofty-status-check",(+new Date()).toString())
   res.status(200).json({
     status: "ok",
-    message: "Brofty SSR server is running",
+    message: `Brofty SSR server is running in ${IS_PRODUCTION ? "production" : "development"} mode`,
   });
 });
 
