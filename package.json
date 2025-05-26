@@ -27,6 +27,7 @@
     "@as-integrations/express5": "^1.0.0",
     "@graphql-tools/schema": "^10.0.23",
     "@prisma/client": "^6.8.2",
+    "@qdrant/js-client-rest": "^1.14.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",

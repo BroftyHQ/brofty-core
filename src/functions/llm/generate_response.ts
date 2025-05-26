@@ -1,26 +1,15 @@
-import redis from "@/src/cache/redis";
 import prisma from "../../db/prisma";
 import pubsub from "../../pubsub";
-
 import OpenAI from "openai";
 import add_to_recent_messages from "@/src/cache/add_to_recent_messages";
+import { OPENAI_KEY } from "@/src/common/constants";
+import get_stm from "@/src/memory/get_stm";
+
+
 const client = new OpenAI({
-  apiKey:
-    "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",
+  apiKey:OPENAI_KEY,
 });
 
-async function get_stm(user){
-  const last_messages = await redis.lrange(`recent_messages:${user}`, 0, 9)
-  if (last_messages.length === 0) {
-    return '';
-  }
-  let final_stm = '';
-  for await (const message of last_messages.reverse()) {
-    const parsedMessage = JSON.parse(message);
-    final_stm += `\n\n${parsedMessage.by}: ${parsedMessage.content}`;
-  }
-  return final_stm;
-}
 
 export default async function generate_response(
   id,
@@ -50,7 +39,7 @@ export default async function generate_response(
   });
   for await (const event of stream) {
     if (event.type == "response.output_text.delta") {
-      pubsub.publish("MESSGAE_STREAM", {
+      pubsub.publish(`MESSGAE_STREAM:${user}`, {
         messageStream: {
           type: "APPEND_MESSAGE",
           id,
@@ -61,7 +50,7 @@ export default async function generate_response(
       });
     } else if (event.type == "response.output_text.done") {
       finalText += event.text;
-      pubsub.publish("MESSGAE_STREAM", {
+      pubsub.publish(`MESSGAE_STREAM:${user}`, {
         messageStream: {
           type: "COMPLETE_MESSAGE",
           id,

@@ -17,6 +17,8 @@ import {
 } from "./types/context";
 import { firebaseAuthApp } from "./firebase";
 import { IS_PRODUCTION } from "./common/constants";
+import get_ctx_with_auth_token from "./get_ctx_with_auth_token";
+import { parse } from "graphql";
 
 interface MyContext {
   token?: string;
@@ -40,7 +42,39 @@ const wsServer = new WebSocketServer({
   // serves expressMiddleware at a different path
   path: "/v1/subscriptions",
 });
-const serverCleanup = useServer({ schema }, wsServer);
+const serverCleanup = useServer(
+  {
+    schema,
+    context: async (ctx: any) => {
+      return get_ctx_with_auth_token(ctx.connectionParams.authorization || "");
+    },
+    onConnect: async (ctx) => {
+      const context: any = await get_ctx_with_auth_token(
+        ctx.connectionParams.authorization || ""
+      );
+      if (context.user && context.user.email) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    onSubscribe: async (ctx, id, payload) => {
+      const context =
+        await get_ctx_with_auth_token(
+          ctx.connectionParams.authorization || ""
+        );
+
+      return {
+        schema,
+        operationName: payload.operationName,
+        document: parse(payload.query),
+        variableValues: payload.variables,
+        contextValue: context,
+      };
+    },
+  },
+  wsServer
+);
 
 // Same ApolloServer initialization as before, plus the drain plugin
 // for our httpServer.
@@ -87,7 +121,9 @@ const corsConfig = cors<cors.CorsRequest>({
 app.get("/rest/v1/status", (req, res) => {
   res.status(200).json({
     status: "ok",
-    message: `Brofty SSR server is running in ${IS_PRODUCTION ? "production" : "development"} mode`,
+    message: `Brofty SSR server is running in ${
+      IS_PRODUCTION ? "production" : "development"
+    } mode`,
   });
 });
 
@@ -106,32 +142,8 @@ app.use(
       if (req.body.operationName === "IntrospectionQuery") {
         return contextIfNotAuthorized;
       }
-
-      const authorization = req.headers.authorization;
-      if (authorization) {
-        var payload: any;
-        try {
-          payload = await firebaseAuthApp.verifyIdToken(authorization);
-        } catch (error: any) {
-          if (authorization === "brofty-srr-server") {
-            return {
-              user: {
-                email: "ssr.server@brofty.com",
-                email_verified: payload.email_verified,
-              },
-            } as AuthorizedGraphQLContext;
-          }
-          return contextIfNotAuthorized;
-        }
-        return {
-          user: {
-            email: payload.email,
-            email_verified: payload.email_verified,
-          },
-        } as AuthorizedGraphQLContext;
-      } else {
-        return contextIfNotAuthorized;
-      }
+      const token = req.headers.authorization || "";
+      return await get_ctx_with_auth_token(token);
     },
   })
 );

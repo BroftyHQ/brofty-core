@@ -24,3 +24,13 @@ model Message {
 
   @@index([user], name: "idx_user")
 }
+
+model LongTermUserMemory {
+  id        String @id @default(cuid())
+  content   String
+  createdAt BigInt
+  updatedAt BigInt
+  user      String
+
+  @@index([user], name: "idx_user_global_memory")
+}

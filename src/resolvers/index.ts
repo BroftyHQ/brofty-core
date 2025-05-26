@@ -35,7 +35,7 @@ const resolvers = {
           id: message.id,
           text: message.content,
           by: message.by,
-          created_at: (message.createdAt).toString(),
+          created_at: message.createdAt.toString(),
         };
       });
     },
@@ -58,26 +58,26 @@ const resolvers = {
           createdAt: +new Date(),
           updatedAt: +new Date(),
           user: user.email,
-          by:"You"
+          by: "You",
         },
       });
       await add_to_recent_messages({
         user: user.email,
         by: "User",
         content: message.content,
-      })
-      pubsub.publish("MESSGAE_STREAM", {
+      });
+      pubsub.publish(`MESSGAE_STREAM:${user.email}`, {
         messageStream: {
           type: "NEW_MESSAGE",
           by: "You",
           id: message.id,
           text: message.content,
-          created_at: (message.createdAt).toString(),
+          created_at: message.createdAt.toString(),
         },
       });
       const response_id = nanoid();
       const initial_response_time = +new Date();
-      pubsub.publish("MESSGAE_STREAM", {
+      pubsub.publish(`MESSGAE_STREAM:${user.email}`, {
         messageStream: {
           type: "NEW_MESSAGE",
           by: "AI",
@@ -86,13 +86,20 @@ const resolvers = {
           created_at: initial_response_time.toString(),
         },
       });
-      generate_response(response_id,initial_response_time, user.email);
+      generate_response(response_id, initial_response_time, user.email);
       return message;
     },
   },
   Subscription: {
     messageStream: {
-      subscribe: () => pubsub.asyncIterableIterator(["MESSGAE_STREAM"]),
+      subscribe: async (
+        parent,
+        args,
+        context: AuthorizedGraphQLContext,
+        info
+      ) => {
+        return pubsub.asyncIterableIterator([`MESSGAE_STREAM:${context.user.email}`]);
+      },
     },
   },
 };
