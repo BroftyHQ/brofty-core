@@ -86,7 +86,7 @@ const resolvers = {
           created_at: initial_response_time.toString(),
         },
       });
-      generate_response(response_id,initial_response_time, message.content, user.email);
+      generate_response(response_id,initial_response_time, user.email);
       return message;
     },
   },

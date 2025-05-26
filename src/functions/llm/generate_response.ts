@@ -25,7 +25,6 @@ async function get_stm(user){
 export default async function generate_response(
   id,
   initial_response_time,
-  text,
   user
 ) {
   let finalText = ``;
