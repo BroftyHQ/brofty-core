@@ -1,11 +1,26 @@
+import redis from "@/src/cache/redis";
 import prisma from "../../db/prisma";
 import pubsub from "../../pubsub";
 
 import OpenAI from "openai";
+import add_to_recent_messages from "@/src/cache/add_to_recent_messages";
 const client = new OpenAI({
   apiKey:
     "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",
 });
+
+async function get_stm(user){
+  const last_messages = await redis.lrange(`recent_messages:${user}`, 0, 9)
+  if (last_messages.length === 0) {
+    return '';
+  }
+  let final_stm = '';
+  for await (const message of last_messages) {
+    const parsedMessage = JSON.parse(message);
+    final_stm += `\n${parsedMessage.by}: ${parsedMessage.content}`;
+  }
+  return final_stm;
+}
 
 export default async function generate_response(
   id,
@@ -14,10 +29,27 @@ export default async function generate_response(
   user
 ) {
   let finalText = ``;
-
+  const current_stm = await get_stm(user);
   const stream = await client.responses.create({
     model: "o4-mini-2025-04-16",
-    input: text,
+    input:`
+    You are a helpful, concise assistant.
+    You have access to the last couple of messages in this chat.
+    Use that short-term context to answer questions accurately and clearly. Do not assume missing information.
+    Keep your responses focused and as brief as possible, unless the user requests detailed explanation.
+    When responding with code, ensure it is correct and properly formatted.
+    If you are unsure, say so honestly.
+    ${
+      current_stm.length > 0
+        ? `
+        Last messages in this chat:
+
+        ${current_stm}
+        `:""
+    }
+
+    current user message: ${text}
+    `,
     stream: true,
   });
   for await (const event of stream) {
@@ -42,6 +74,11 @@ export default async function generate_response(
           created_at: initial_response_time.toString(),
         },
       });
+      await add_to_recent_messages({
+        user,
+        by:"AI",
+        content: finalText,
+      })
     }else{
       
       

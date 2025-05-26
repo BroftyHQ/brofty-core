@@ -4,6 +4,7 @@ import { Message } from "../generated/prisma";
 import pubsub from "../pubsub";
 import prisma from "../db/prisma";
 import generate_response from "../functions/llm/generate_response";
+import add_to_recent_messages from "../cache/add_to_recent_messages";
 
 const resolvers = {
   Query: {
@@ -60,6 +61,11 @@ const resolvers = {
           by:"You"
         },
       });
+      await add_to_recent_messages({
+        user: user.email,
+        by: "User",
+        content: message.content,
+      })
       pubsub.publish("MESSGAE_STREAM", {
         messageStream: {
           type: "NEW_MESSAGE",
