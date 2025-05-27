@@ -100,6 +100,7 @@ const http_client_def: OpenAI.Responses.Tool = {
       },
     },
     required: ["url"],
+    strict: true,
     additionalProperties: false,
   },
   strict: true,
