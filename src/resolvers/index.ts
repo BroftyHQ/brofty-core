@@ -51,6 +51,7 @@ const resolvers = {
       if (!user) {
         throw new Error("User not authenticated");
       }
+      
       const message = await prisma.message.create({
         data: {
           id: nanoid(),
@@ -75,18 +76,26 @@ const resolvers = {
           created_at: message.createdAt.toString(),
         },
       });
-      const response_id = nanoid();
-      const initial_response_time = +new Date();
+      const response = await prisma.message.create({
+      data: {
+        id : nanoid(),
+        content: "",
+        createdAt: +new Date(),
+        updatedAt: +new Date(),
+        user: user.email,
+        by: "AI",
+      },
+    });
       pubsub.publish(`MESSGAE_STREAM:${user.email}`, {
         messageStream: {
           type: "NEW_MESSAGE",
           by: "AI",
-          id: response_id,
+          id: response.id,
           text: "",
-          created_at: initial_response_time.toString(),
+          created_at: response.createdAt.toString(),
         },
       });
-      generate_response(response_id, initial_response_time, user.email);
+      generate_response(response.id, response.createdAt.toString(), user.email, '', 0);
       return message;
     },
   },
