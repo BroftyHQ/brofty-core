@@ -4,7 +4,7 @@ export default async function get_stm(user, disable = false) {
   const last_messages = await redis.lrange(
     `recent_messages:${user}`,
     0,
-    disable ? 1 : 9
+    disable ? 1 : 19
   );
   if (last_messages.length === 0) {
     return "";

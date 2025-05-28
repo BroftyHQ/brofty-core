@@ -10,5 +10,5 @@ export default async function add_to_recent_messages({ user, by, content }) {
     })
   );
   // trim the list to 10 messages
-  await redis.ltrim(`recent_messages:${user}`, 0, 9);
+  await redis.ltrim(`recent_messages:${user}`, 0, 19);
 }
