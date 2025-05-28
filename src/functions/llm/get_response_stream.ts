@@ -6,8 +6,6 @@ const client = new OpenAI({
   apiKey: OPENAI_KEY,
 });
 
-import ollama from "ollama";
-
 export default async function get_response_stream({
   input,
 }: {
