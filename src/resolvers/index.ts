@@ -1,10 +1,9 @@
 import { nanoid } from "nanoid";
 import { AuthorizedGraphQLContext } from "../types/context.js";
 import pubsub from "../pubsub/index.js";
-import prisma from "../db/prisma.js";
 import generate_response from "../functions/llm/generate_response.js";
 import add_to_recent_messages from "../cache/add_to_recent_messages.js";
-import { Message } from "../../generated/prisma/index.js";
+import prisma from "../db/prisma.js";
 
 const resolvers = {
   Query: {
@@ -21,7 +20,7 @@ const resolvers = {
       if (!user) {
         throw new Error("User not authenticated");
       }
-      const messages: Message[] = await prisma.message.findMany({
+      const messages = await prisma.message.findMany({
         where: {
           user: user.email,
         },

@@ -22,7 +22,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow();
-  import("../dist/core_server.js").then(async (func) => {
+  import("./server/core_server.js").then(async (func) => {
     await func.default();
   });
 

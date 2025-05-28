@@ -1,15 +1,17 @@
 {
   "name": "brofty-core",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/index.ts",
+  "description": "Brofty core server",
+  "main": "electron/app.js",
   "scripts": {
-    "compile": "yarn prisma-generate && tsc",
-    "dev": "yarn tsx watch .",
+    "compile": "yarn prisma-generate && tsc --outDir electron/server",
+    "dev": "yarn tsx watch src/index.ts",
     "app:dev": "electron electron/app.js",
-    "start": "tsx ./dist/index.js",
+    "app:build": "electron-builder",
+    "app:build-dir": "electron-builder --dir",
+    "start": "tsx ./electron/server/index.js",
     "prisma-generate": "prisma generate",
-    "prisma-push": "prisma db push && prisma generate"
+    "prisma-push": "prisma db push && yarn prisma-generate"
   },
   "repository": {
     "type": "git",
@@ -45,6 +47,7 @@
   "devDependencies": {
     "@types/node": "^22.15.21",
     "electron": "^36.3.1",
+    "electron-builder": "^26.0.12",
     "prisma": "^6.8.2",
     "typescript": "^5.8.3"
   }
