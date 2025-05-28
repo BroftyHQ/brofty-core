@@ -5,10 +5,8 @@ import add_to_recent_messages from "@/src/cache/add_to_recent_messages";
 import { OPENAI_KEY } from "@/src/common/constants";
 import get_stm from "@/src/memory/get_stm";
 import tools, { toolMap } from "@/src/tools";
+import get_response_stream from "./get_response_stream";
 
-const client = new OpenAI({
-  apiKey: OPENAI_KEY,
-});
 
 export default async function generate_response(
   id,
@@ -36,10 +34,7 @@ export default async function generate_response(
   }
   recursion_count++;
   const current_stm = await get_stm(user);
-  const stream = await client.responses.create({
-    model: "gpt-4.1-mini-2025-04-14",
-    tools: tools,
-    tool_choice: "auto",
+  const stream:any = await get_response_stream({
     input: `
     You are a helpful, concise assistant.
     You have access to the last couple of messages in this chat.
@@ -58,9 +53,10 @@ export default async function generate_response(
 
     ${fn_log}
     `,
-    stream: true,
   });
   for await (const event of stream) {
+    // console.log('Msg from', event);
+    
     if (event.type == "response.output_text.delta") {
       pubsub.publish(`MESSGAE_STREAM:${user}`, {
         messageStream: {

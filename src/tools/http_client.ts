@@ -2,28 +2,37 @@ import OpenAI from "openai";
 
 interface HttpClientParams {
   url: string;
-  method?: "GET" | "POST" | "PUT" | "DELETE";
-  headers?: Record<string, string>;
-  body?: string | object;
-  timeout?: number;
+  method: "GET" | "POST" | "PUT" | "DELETE";
+  headers: string;
+  body: string;
+  timeout: number;
 }
 
 async function http_client({
   url,
   method = "GET",
-  headers = {},
+  headers = "{}",
   body,
   timeout = 10000,
 }: HttpClientParams) {
+  console.log(`Calling HTTP endpoint ${url}`);
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    let supplied_headers = {};
+    try {
+      supplied_headers = JSON.parse(headers);
+    } catch (error) {
+      throw new Error("Error while parsing headers");
+    }
 
     const fetchOptions: RequestInit = {
       method,
       headers: {
         "Content-Type": "application/json",
-        ...headers,
+        ...supplied_headers,
       },
       signal: controller.signal,
     };
@@ -85,13 +94,14 @@ const http_client_def: OpenAI.Responses.Tool = {
         description: "HTTP method to use. Defaults to GET",
       },
       headers: {
-        type: "object",
-        description: "Additional headers to send with the request",
+        type: "string",
+        description:
+          `Additional headers to send with the request in string format. In key value pair object. Defaults to {} (empty object). Example is "{"Content-Type":"application/json"}"`,
       },
       body: {
-        type: "object",
+        type: "string",
         description:
-          "Request body for POST/PUT requests. Can be a JSON object, Request body as a JSON object (will be automatically stringified)",
+          "Request body for POST/PUT requests. Can be a JSON object in a string format, Request body as a JSON object (will be automatically stringified). Defaults to {} (empty object)",
       },
       timeout: {
         type: "number",
@@ -99,8 +109,7 @@ const http_client_def: OpenAI.Responses.Tool = {
           "Request timeout in milliseconds. Defaults to 10000 (10 seconds)",
       },
     },
-    required: ["url"],
-    strict: true,
+    required: ["url", "method", "headers", "body", "timeout"],
     additionalProperties: false,
   },
   strict: true,
