@@ -1,8 +1,8 @@
-import { firebaseAuthApp } from "./firebase";
+import { firebaseAuthApp } from "./firebase/index.js";
 import {
   AnonymousGraphQLContext,
   AuthorizedGraphQLContext,
-} from "./types/context";
+} from "./types/context.js";
 
 export default async function get_ctx_with_auth_token(
   token: string

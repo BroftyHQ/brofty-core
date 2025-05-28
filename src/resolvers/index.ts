@@ -1,10 +1,10 @@
 import { nanoid } from "nanoid";
-import { AuthorizedGraphQLContext } from "../types/context";
-import { Message } from "../generated/prisma";
-import pubsub from "../pubsub";
-import prisma from "../db/prisma";
-import generate_response from "../functions/llm/generate_response";
-import add_to_recent_messages from "../cache/add_to_recent_messages";
+import { AuthorizedGraphQLContext } from "../types/context.js";
+import pubsub from "../pubsub/index.js";
+import prisma from "../db/prisma.js";
+import generate_response from "../functions/llm/generate_response.js";
+import add_to_recent_messages from "../cache/add_to_recent_messages.js";
+import { Message } from "../../generated/prisma/index.js";
 
 const resolvers = {
   Query: {

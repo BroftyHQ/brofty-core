@@ -1,4 +1,4 @@
-import redis from "../cache/redis";
+import redis from "../cache/redis.js";
 
 export default async function get_stm(user, disable = false) {
   const last_messages = await redis.lrange(
