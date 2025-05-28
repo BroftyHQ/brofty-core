@@ -57,7 +57,13 @@ async function http_client({
     return {
       status: response.status,
       statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries()),
+      headers: (() => {
+        const headersObj: Record<string, string> = {};
+        response.headers.forEach((value, key) => {
+          headersObj[key] = value;
+        });
+        return headersObj;
+      })(),
       data: responseData,
       success: response.ok,
     };

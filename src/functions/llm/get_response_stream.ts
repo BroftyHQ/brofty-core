@@ -1,6 +1,7 @@
-import { OPENAI_KEY } from "@/src/common/constants";
-import tools from "@/src/tools";
+
 import OpenAI from "openai";
+import { OPENAI_KEY } from "../../common/constants.js";
+import tools from "../../tools/index.js";
 
 const client = new OpenAI({
   apiKey: OPENAI_KEY,

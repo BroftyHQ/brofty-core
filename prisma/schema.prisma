@@ -6,7 +6,12 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  output   = "../prisma-client"
+}
+
+generator electron_client {
+  provider = "prisma-client-js"
+  output   = "../electron/prisma-client"
 }
 
 datasource db {

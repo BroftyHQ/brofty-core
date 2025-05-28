@@ -1,4 +1,4 @@
-import redis from "./redis";
+import redis from "./redis.js";
 
 export default async function add_to_recent_messages({ user, by, content }) {
   // add to redis recent messages

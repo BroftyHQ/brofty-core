@@ -1,11 +1,9 @@
-import prisma from "../../db/prisma";
-import pubsub from "../../pubsub";
-import OpenAI from "openai";
-import add_to_recent_messages from "@/src/cache/add_to_recent_messages";
-import { OPENAI_KEY } from "@/src/common/constants";
-import get_stm from "@/src/memory/get_stm";
-import tools, { toolMap } from "@/src/tools";
-import get_response_stream from "./get_response_stream";
+import pubsub from "../../pubsub/index.js";
+import get_response_stream from "./get_response_stream.js";
+import add_to_recent_messages from "../../cache/add_to_recent_messages.js";
+import get_stm from "../../memory/get_stm.js";
+import { toolMap } from "../../tools/index.js";
+import prisma from "../../db/prisma.js";
 
 
 export default async function generate_response(

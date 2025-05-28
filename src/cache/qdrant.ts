@@ -1,5 +1,5 @@
 import {QdrantClient} from '@qdrant/js-client-rest';
-import { QDRANT_KEY, QDRANT_URI } from '../common/constants';
+import { QDRANT_KEY, QDRANT_URI } from '../common/constants.js';
 
 
 // or connect to Qdrant Cloud
