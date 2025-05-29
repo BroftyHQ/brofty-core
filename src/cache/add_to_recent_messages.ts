@@ -1,14 +1,14 @@
-import redis from "./redis.js";
+// import redis from "./redis.js";
 
 export default async function add_to_recent_messages({ user, by, content }) {
   // add to redis recent messages
-  await redis.lpush(
-    `recent_messages:${user}`,
-    JSON.stringify({
-      content,
-      by,
-    })
-  );
+  // await redis.lpush(
+  //   `recent_messages:${user}`,
+  //   JSON.stringify({
+  //     content,
+  //     by,
+  //   })
+  // );
   // trim the list to 10 messages
-  await redis.ltrim(`recent_messages:${user}`, 0, 19);
+  // await redis.ltrim(`recent_messages:${user}`, 0, 19);
 }

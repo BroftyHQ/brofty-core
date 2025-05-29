@@ -1,17 +1,15 @@
 {
   "name": "brofty-core",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Brofty core server",
   "main": "electron/app.js",
   "scripts": {
-    "compile": "yarn prisma-generate && tsc --outDir electron/server",
+    "compile": "tsc --outDir electron/server",
     "dev": "yarn tsx watch src/index.ts",
     "app:dev": "electron electron/app.js",
     "app:build": "electron-builder",
     "app:build-dir": "electron-builder --dir",
-    "start": "tsx ./electron/server/index.js",
-    "prisma-generate": "prisma generate",
-    "prisma-push": "prisma db push && yarn prisma-generate"
+    "start": "tsx ./electron/server/index.js"
   },
   "repository": {
     "type": "git",
@@ -29,15 +27,11 @@
     "@apollo/server": "^4.12.1",
     "@as-integrations/express5": "^1.0.0",
     "@graphql-tools/schema": "^10.0.23",
-    "@prisma/client": "^6.8.2",
-    "@qdrant/js-client-rest": "^1.14.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "firebase-admin": "^13.4.0",
     "graphql": "^16.11.0",
     "graphql-subscriptions": "^3.0.0",
     "graphql-ws": "^6.0.5",
-    "ioredis": "^5.6.1",
     "mathjs": "^14.5.0",
     "nanoid": "^5.1.5",
     "openai": "^4.103.0",
@@ -48,7 +42,6 @@
     "@types/node": "^22.15.21",
     "electron": "^36.3.1",
     "electron-builder": "^26.0.12",
-    "prisma": "^6.8.2",
     "typescript": "^5.8.3"
   }
 }

@@ -3,7 +3,6 @@ import get_response_stream from "./get_response_stream.js";
 import add_to_recent_messages from "../../cache/add_to_recent_messages.js";
 import get_stm from "../../memory/get_stm.js";
 import { toolMap } from "../../tools/index.js";
-import prisma from "../../db/prisma.js";
 
 
 export default async function generate_response(
@@ -18,15 +17,15 @@ export default async function generate_response(
   let has_function_calls = false;
 
   if (recursion_count > 10) {
-        await prisma.message.update({
-      where: {
-        id,
-      },
-      data: {
-        content: `Skipped - exceeded max recusion calls`,
-        updatedAt: +new Date(),
-      },
-    });
+    //     await prisma.message.update({
+    //   where: {
+    //     id,
+    //   },
+    //   data: {
+    //     content: `Skipped - exceeded max recusion calls`,
+    //     updatedAt: +new Date(),
+    //   },
+    // });
 
     return;
   }
@@ -127,22 +126,22 @@ export default async function generate_response(
   }
 
   if (finalText.trim().length > 0) {
-    const exisitingMessage = await prisma.message.findUnique({
-      where: {
-        id,
-      },
-    });
-    if (!exisitingMessage) {
-      return;
-    }
-    await prisma.message.update({
-      where: {
-        id,
-      },
-      data: {
-        content: `${exisitingMessage.content} ${finalText}`,
-        updatedAt: +new Date(),
-      },
-    });
+    // const exisitingMessage = await prisma.message.findUnique({
+    //   where: {
+    //     id,
+    //   },
+    // });
+    // if (!exisitingMessage) {
+    //   return;
+    // }
+    // await prisma.message.update({
+    //   where: {
+    //     id,
+    //   },
+    //   data: {
+    //     content: `${exisitingMessage.content} ${finalText}`,
+    //     updatedAt: +new Date(),
+    //   },
+    // });
   }
 }
