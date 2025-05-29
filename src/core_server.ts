@@ -148,5 +148,5 @@ export default async function start_core_server() {
   await new Promise<void>((resolve) =>
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve)
   );
-  console.log(`🚀Brofty Core Server ready`);
+  console.log(`🚀 Brofty Core Server ready`);
 }

@@ -1,5 +1,6 @@
 // import { nanoid } from "nanoid";
 import { AuthorizedGraphQLContext } from "../types/context.js";
+import { getPreference, setPreference } from "../user_preferences/index.js";
 // import pubsub from "../pubsub/index.js";
 // import generate_response from "../functions/llm/generate_response.js";
 // import add_to_recent_messages from "../cache/add_to_recent_messages.js";
@@ -30,6 +31,20 @@ const resolvers = {
         };
       });
     },
+    getPreferenceByKey: async (
+      _parent: any,
+      args: { key: string },
+      context: AuthorizedGraphQLContext,
+      _info: any
+    ) => {
+      const user = context.user;
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      // Assuming there's a function to get user preferences
+      const preference = await getPreference(args.key);
+      return preference || null;
+    }
   },
   Mutation: {
     // sendMessage: async (
@@ -89,6 +104,20 @@ const resolvers = {
     //   generate_response(response.id, response.createdAt.toString(), user.email, '', 0);
     //   return message;
     // },
+    setPreference: async (
+      _parent: any,
+      args: { key: string; value: string },
+      context: AuthorizedGraphQLContext,
+      _info: any
+    ) => {
+      const user = context.user;
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      // Assuming there's a function to set user preferences
+      await setPreference(args.key, args.value);
+      return args.value;
+    }
   },
   Subscription: {
     // messageStream: {

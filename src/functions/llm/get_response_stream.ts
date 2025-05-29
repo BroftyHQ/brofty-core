@@ -19,16 +19,4 @@ export default async function get_response_stream({
     //   input,
     //   stream:true
     // });
-
-//   return await ollama.chat({
-//     model: "llama3.1",
-//     messages: [
-//       {
-//         role: "user",
-//         content: input,
-//       },
-//     ],
-//     // tools:tools,
-//     stream: true,
-//   });
 }

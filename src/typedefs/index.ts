@@ -9,10 +9,12 @@ const typeDefs = `
   type Query {
     status: String!
     getMessages: [Message]
+    getPreferenceByKey(key: String!): String
   }
 
   type Mutation {
     sendMessage(message: String!): Message
+    setPreference(key: String!, value: String!): String
   }
 
   type PartialMessage {
