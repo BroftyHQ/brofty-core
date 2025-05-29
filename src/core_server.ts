@@ -14,6 +14,7 @@ import { AnonymousGraphQLContext } from "./types/context.js";
 import { IS_PRODUCTION } from "./common/constants.js";
 import get_ctx_with_auth_token from "./get_ctx_with_auth_token.js";
 import { parse } from "graphql";
+import sequelize from "./db/sqlite/client.js";
 
 interface MyContext {
   token?: string;
@@ -48,7 +49,7 @@ export default async function start_core_server() {
       },
       onConnect: async (ctx) => {
         const context: any = await get_ctx_with_auth_token(
-          ctx.connectionParams.authorization as string || ""
+          (ctx.connectionParams.authorization as string) || ""
         );
         if (context.user && context.user.email) {
           return true;
@@ -58,7 +59,7 @@ export default async function start_core_server() {
       },
       onSubscribe: async (ctx, id, payload) => {
         const context = await get_ctx_with_auth_token(
-          ctx.connectionParams.authorization as string || ""
+          (ctx.connectionParams.authorization as string) || ""
         );
 
         return {
@@ -145,8 +146,11 @@ export default async function start_core_server() {
     })
   );
   // Modified server startup
-  await new Promise<void>((resolve) =>
-    httpServer.listen({ port: process.env.PORT || 4000 }, resolve)
-  );
+  await new Promise<void>((resolve) => {
+    httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
+    sequelize.sync({ alter: true }).then(() => {
+      console.log("✅ Database synced successfully");
+    });
+  });
   console.log(`🚀 Brofty Core Server ready`);
 }

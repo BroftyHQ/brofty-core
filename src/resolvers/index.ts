@@ -1,10 +1,11 @@
-// import { nanoid } from "nanoid";
+import { nanoid } from "nanoid";
+import pubsub from "../pubsub/index.js";
 import { AuthorizedGraphQLContext } from "../types/context.js";
 import { getPreference, setPreference } from "../user_preferences/index.js";
-// import pubsub from "../pubsub/index.js";
-// import generate_response from "../functions/llm/generate_response.js";
-// import add_to_recent_messages from "../cache/add_to_recent_messages.js";
-// import prisma from "../db/prisma.js";
+import generate_response from "../functions/llm/generate_response.js";
+import add_to_recent_messages from "../cache/add_to_recent_messages.js";
+import { message_model } from "../db/sqlite/models.js";
+
 
 const resolvers = {
   Query: {
@@ -21,8 +22,10 @@ const resolvers = {
       if (!user) {
         throw new Error("User not authenticated");
       }
-      const messages = []
-      return messages.map((message) => {
+      const messages = await message_model.findAll({
+        limit: 100,
+      })
+      return messages.map((message:any) => {
         return {
           id: message.id,
           text: message.content,
@@ -47,33 +50,33 @@ const resolvers = {
     }
   },
   Mutation: {
-    // sendMessage: async (
-    //   _parent: any,
-    //   args: { message: string },
-    //   context: AuthorizedGraphQLContext,
-    //   _info: any
-    // ) => {
-    //   const user = context.user;
-    //   if (!user) {
-    //     throw new Error("User not authenticated");
-    //   }
+    sendMessage: async (
+      _parent: any,
+      args: { message: string },
+      context: AuthorizedGraphQLContext,
+      _info: any
+    ) => {
+      const user = context.user;
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
       
-    //   const message = await prisma.message.create({
-    //     data: {
-    //       id: nanoid(),
-    //       content: args.message,
-    //       createdAt: +new Date(),
-    //       updatedAt: +new Date(),
-    //       user: user.email,
-    //       by: "You",
-    //     },
-    //   });
-    //   await add_to_recent_messages({
-    //     user: user.email,
-    //     by: "User",
-    //     content: message.content,
-    //   });
-    //   pubsub.publish(`MESSGAE_STREAM:${user.email}`, {
+      // const message = await prisma.message.create({
+      //   data: {
+      //     id: nanoid(),
+      //     content: args.message,
+      //     createdAt: +new Date(),
+      //     updatedAt: +new Date(),
+      //     user: user.email,
+      //     by: "You",
+      //   },
+      // });
+      // await add_to_recent_messages({
+      //   user: user.email,
+      //   by: "User",
+      //   content: message.content,
+      // });
+    //   pubsub.publish(`MESSGAE_STREAM:${user.token}`, {
     //     messageStream: {
     //       type: "NEW_MESSAGE",
     //       by: "You",
@@ -92,18 +95,18 @@ const resolvers = {
     //     by: "AI",
     //   },
     // });
-    //   pubsub.publish(`MESSGAE_STREAM:${user.email}`, {
-    //     messageStream: {
-    //       type: "NEW_MESSAGE",
-    //       by: "AI",
-    //       id: response.id,
-    //       text: "",
-    //       created_at: response.createdAt.toString(),
-    //     },
-    //   });
-    //   generate_response(response.id, response.createdAt.toString(), user.email, '', 0);
-    //   return message;
-    // },
+      // pubsub.publish(`MESSGAE_STREAM:${user.token}`, {
+      //   messageStream: {
+      //     type: "NEW_MESSAGE",
+      //     by: "AI",
+      //     id: response.id,
+      //     text: "",
+      //     created_at: response.createdAt.toString(),
+      //   },
+      // });
+      // generate_response(response.id, response.createdAt.toString(), user.email, '', 0);
+      // return message;
+    },
     setPreference: async (
       _parent: any,
       args: { key: string; value: string },
@@ -120,16 +123,16 @@ const resolvers = {
     }
   },
   Subscription: {
-    // messageStream: {
-    //   subscribe: async (
-    //     parent,
-    //     args,
-    //     context: AuthorizedGraphQLContext,
-    //     info
-    //   ) => {
-    //     return pubsub.asyncIterableIterator([`MESSGAE_STREAM:${context.user.email}`]);
-    //   },
-    // },
+    messageStream: {
+      subscribe: async (
+        parent,
+        args,
+        context: AuthorizedGraphQLContext,
+        info
+      ) => {
+        return pubsub.asyncIterableIterator([`MESSGAE_STREAM:${context.user.token}`]);
+      },
+    },
   },
 };
 
