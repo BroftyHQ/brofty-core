@@ -33,6 +33,7 @@
     "graphql": "^16.11.0",
     "graphql-subscriptions": "^3.0.0",
     "graphql-ws": "^6.0.5",
+    "luxon": "^3.6.1",
     "mathjs": "^14.5.0",
     "nanoid": "^5.1.5",
     "openai": "^4.103.0",
@@ -42,6 +43,7 @@
     "ws": "^8.18.2"
   },
   "devDependencies": {
+    "@types/luxon": "^3.6.2",
     "@types/node": "^22.15.21",
     "electron": "^36.3.1",
     "electron-builder": "^26.0.12",

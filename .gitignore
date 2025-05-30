@@ -5,3 +5,6 @@ generated
 node_modules
 package-lock.json
 yarn-error.log
+
+# ignore all sqlite files in any directory
+*.sqlite

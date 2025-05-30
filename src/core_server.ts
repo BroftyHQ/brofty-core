@@ -51,7 +51,7 @@ export default async function start_core_server() {
         const context: any = await get_ctx_with_auth_token(
           (ctx.connectionParams.authorization as string) || ""
         );
-        if (context.user && context.user.email) {
+        if (context.user && context.user.token) {
           return true;
         } else {
           return false;
@@ -148,7 +148,7 @@ export default async function start_core_server() {
   // Modified server startup
   await new Promise<void>((resolve) => {
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
-    sequelize.sync({ alter: true }).then(() => {
+    sequelize.sync({ alter: true, logging:false }).then(() => {
       console.log("✅ Database synced successfully");
     });
   });

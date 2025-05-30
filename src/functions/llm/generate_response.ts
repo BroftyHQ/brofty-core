@@ -3,6 +3,7 @@ import get_response_stream from "./get_response_stream.js";
 import get_stm from "../../memory/get_stm.js";
 import { toolMap } from "../../tools/index.js";
 import { message_model } from "../../db/sqlite/models.js";
+import { DateTime } from "luxon";
 
 export default async function generate_response(
   id,
@@ -18,7 +19,7 @@ export default async function generate_response(
 
   if (recursion_count > 10) {
     await message_model.update(
-      { content: `Skipped - exceeded max recursion calls`, updatedAt: +new Date() },
+      { text: `Skipped - exceeded max recursion calls`, updated_at: +new Date() },
       { where: { id } }
     );
     return;
@@ -26,6 +27,8 @@ export default async function generate_response(
   recursion_count++;
   const current_stm = await get_stm(user);
   const stream:any = await get_response_stream({
+    id,
+    user,
     input: `
     You are a helpful, concise assistant.
     You have access to the last couple of messages in this chat.
@@ -43,10 +46,11 @@ export default async function generate_response(
     }
 
     ${fn_log}
-
-    Current user query: ${messsage}
     `,
   });
+  if(stream === null) {
+    return;
+  }
   for await (const event of stream) {
     // console.log('Msg from', event);
     
@@ -128,7 +132,7 @@ export default async function generate_response(
       return;
     }
     await message_model.update(
-      { content: `${exisitingMessage.text} ${finalText}`, updatedAt: +new Date() },
+      { text: `${exisitingMessage.text} ${finalText}`, updated_at: DateTime.now().toMillis() },
       { where: { id } }
     );
   }

@@ -4,6 +4,7 @@ import { AuthorizedGraphQLContext } from "../types/context.js";
 import { getPreference, setPreference } from "../user_preferences/index.js";
 import generate_response from "../functions/llm/generate_response.js";
 import { message_model } from "../db/sqlite/models.js";
+import { DateTime } from "luxon";
 
 const resolvers = {
   Query: {
@@ -26,9 +27,9 @@ const resolvers = {
       return messages.map((message: any) => {
         return {
           id: message.id,
-          text: message.content,
+          text: message.text,
           by: message.by,
-          created_at: message.createdAt.toString(),
+          created_at: message.created_at.toString(),
         };
       });
     },
@@ -62,8 +63,8 @@ const resolvers = {
         id: nanoid(),
         text: args.message,
         by: "User",
-        createdAt: +new Date(),
-        updatedAt: +new Date(),
+        created_at: DateTime.now().toMillis(),
+        updated_at: DateTime.now().toMillis(),
       });
       pubsub.publish(`MESSGAE_STREAM:${user.token}`, {
         messageStream: {
@@ -79,8 +80,8 @@ const resolvers = {
         id: nanoid(),
         text: "",
         by: "AI",
-        createdAt: +new Date(),
-        updatedAt: +new Date(),
+        created_at: DateTime.now().toMillis(),
+        updated_at: DateTime.now().toMillis(),
       });
       pubsub.publish(`MESSGAE_STREAM:${user.token}`, {
         messageStream: {

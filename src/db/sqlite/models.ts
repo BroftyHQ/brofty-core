@@ -3,9 +3,8 @@ import sequelize from './client.js';
 
 const message_model = sequelize.define('Message', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         primaryKey: true,
-        autoIncrement: true,
     },
     text: {
         type: DataTypes.STRING,
@@ -16,14 +15,12 @@ const message_model = sequelize.define('Message', {
         allowNull: false,
     },
     created_at: {
-        type: DataTypes.DATE,
+        type: DataTypes.BIGINT,
         allowNull: false,
-        defaultValue: DataTypes.NOW,
     },
     updated_at: {
-        type: DataTypes.DATE,
+        type: DataTypes.BIGINT,
         allowNull: false,
-        defaultValue: DataTypes.NOW,
     },
 });
 
