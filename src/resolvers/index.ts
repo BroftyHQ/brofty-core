@@ -1,0 +1,136 @@
+import { nanoid } from "nanoid";
+import pubsub from "../pubsub/index.js";
+import { AuthorizedGraphQLContext } from "../types/context.js";
+import { getPreference, setPreference } from "../user_preferences/index.js";
+import generate_response from "../functions/llm/generate_response.js";
+import { message_model } from "../db/sqlite/models.js";
+import { DateTime } from "luxon";
+
+const resolvers = {
+  Query: {
+    status: () => {
+      return "Server is running";
+    },
+    getMessages: async (
+      _parent: any,
+      _args: any,
+      context: AuthorizedGraphQLContext,
+      _info: any
+    ) => {
+      const user = context.user;
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      const messages = await message_model.findAll({
+        limit: 100,
+      });
+      return messages.map((message: any) => {
+        return {
+          id: message.id,
+          text: message.text,
+          by: message.by,
+          created_at: message.created_at.toString(),
+        };
+      });
+    },
+    getPreferenceByKey: async (
+      _parent: any,
+      args: { key: string },
+      context: AuthorizedGraphQLContext,
+      _info: any
+    ) => {
+      const user = context.user;
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      // Assuming there's a function to get user preferences
+      const preference = await getPreference(args.key);
+      return preference || null;
+    },
+  },
+  Mutation: {
+    sendMessage: async (
+      _parent: any,
+      args: { message: string },
+      context: AuthorizedGraphQLContext,
+      _info: any
+    ) => {
+      const user = context.user;
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      const message: any = await message_model.create({
+        id: nanoid(),
+        text: args.message,
+        by: "User",
+        created_at: DateTime.now().toMillis(),
+        updated_at: DateTime.now().toMillis(),
+      });
+      pubsub.publish(`MESSGAE_STREAM:${user.token}`, {
+        messageStream: {
+          type: "NEW_MESSAGE",
+          by: "You",
+          id: message.id,
+          text: message.text,
+          created_at: message.createdAt.toString(),
+        },
+      });
+
+      const response: any = await message_model.create({
+        id: nanoid(),
+        text: "",
+        by: "AI",
+        created_at: DateTime.now().toMillis(),
+        updated_at: DateTime.now().toMillis(),
+      });
+      pubsub.publish(`MESSGAE_STREAM:${user.token}`, {
+        messageStream: {
+          type: "NEW_MESSAGE",
+          by: "AI",
+          id: response.id,
+          text: "",
+          created_at: response.createdAt.toString(),
+        },
+      });
+      generate_response(
+        response.id,
+        args.message,
+        response.createdAt.toString(),
+        user.token,
+        "",
+        0
+      );
+      return message;
+    },
+    setPreference: async (
+      _parent: any,
+      args: { key: string; value: string },
+      context: AuthorizedGraphQLContext,
+      _info: any
+    ) => {
+      const user = context.user;
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      // Assuming there's a function to set user preferences
+      await setPreference(args.key, args.value);
+      return args.value;
+    },
+  },
+  Subscription: {
+    messageStream: {
+      subscribe: async (
+        parent,
+        args,
+        context: AuthorizedGraphQLContext,
+        info
+      ) => {
+        return pubsub.asyncIterableIterator([
+          `MESSGAE_STREAM:${context.user.token}`,
+        ]);
+      },
+    },
+  },
+};
+
+export default resolvers;
