@@ -8,7 +8,7 @@
     "compile": "yarn clean && tsc --outDir electron/server",
     "dev": "yarn tsx watch src/index.ts",
     "app:dev": "electron electron/app.js",
-    "app:build": "electron-builder",
+    "app:build": "tsx src/build-electron-app.ts",
     "app:build-dir": "electron-builder --dir",
     "start": "tsx ./electron/server/index.js"
   },
