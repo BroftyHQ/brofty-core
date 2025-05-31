@@ -4,7 +4,7 @@
   "description": "Brofty core server",
   "main": "electron/app.js",
   "scripts": {
-    "clean": "rimraf electron/server",
+    "clean": "rimraf electron/server && rimraf dist",
     "compile": "yarn clean && tsc --outDir electron/server",
     "dev": "yarn tsx watch src/index.ts",
     "app:dev": "electron electron/app.js",

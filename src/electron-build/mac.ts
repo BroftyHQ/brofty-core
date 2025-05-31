@@ -3,5 +3,10 @@ import builder_configs from "./core.js";
 
 builder.build({
   targets: builder.Platform.MAC.createTarget(),
-  config: builder_configs,
+  config: {
+    ...builder_configs,
+    directories: {
+      output: "dist/mac",
+    },
+  },
 });
