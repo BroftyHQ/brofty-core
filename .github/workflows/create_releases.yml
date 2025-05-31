@@ -116,32 +116,24 @@ jobs:
         with:
           name: mac-release
           path: ./release/mac
+      - name: Extract version from commit message
+        id: extract_version
+        run: |
+          MSG="${{ github.event.head_commit.message }}"
+          if [[ "$MSG" =~ ^release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "Commit message does not match expected pattern."
+            exit 1
+          fi
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.extract_version.outputs.version }}
           files: |
             release/win/*
             release/linux/*
             release/mac/*
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-
-  tag-version:
-    needs: check-commit-message
-    if: needs.check-commit-message.outputs.should_run == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get version from package.json
-        id: get_version
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Create and push tag
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git tag v${{ steps.get_version.outputs.version }}
-          git push origin v${{ steps.get_version.outputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
