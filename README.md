@@ -1,2 +1,3 @@
 # brofty-core
 
+action test
