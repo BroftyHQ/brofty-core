@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build
-        run: npm run build
+        run: npm run compile
       - name: Package Windows Release
         run: npm run build:win
       - name: Upload Windows Artifact
@@ -59,7 +59,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build
-        run: npm run build
+        run: npm run compile
       - name: Package Linux Release
         run: npm run build:linux
       - name: Upload Linux Artifact
@@ -81,7 +81,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build
-        run: npm run build
+        run: npm run compile
       - name: Package Mac Release
         run: npm run build:mac
       - name: Upload Mac Artifact
