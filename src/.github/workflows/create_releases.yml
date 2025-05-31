@@ -1,0 +1,120 @@
+name: Build Releases
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  check-commit-message:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Get commit message
+        id: getmsg
+        run: |
+          echo "msg=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
+      - name: Check commit message
+        id: check
+        run: |
+          if [[ "${{ steps.getmsg.outputs.msg }}" =~ ^release\ v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+
+  build-windows:
+    needs: check-commit-message
+    if: needs.check-commit-message.outputs.should_run == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Package Windows Release
+        run: npm run build:win
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: dist/win/*
+
+  build-linux:
+    needs: check-commit-message
+    if: needs.check-commit-message.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Package Linux Release
+        run: npm run build:linux
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: dist/linux/*
+
+  build-mac:
+    needs: check-commit-message
+    if: needs.check-commit-message.outputs.should_run == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Package Mac Release
+        run: npm run build:mac
+      - name: Upload Mac Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-release
+          path: dist/mac/*
+
+  create-release:
+    needs: [build-windows, build-linux, build-mac]
+    if: needs.check-commit-message.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-release
+          path: ./release/win
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-release
+          path: ./release/linux
+      - name: Download Mac Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-release
+          path: ./release/mac
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/win/*
+            release/linux/*
+            release/mac/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
