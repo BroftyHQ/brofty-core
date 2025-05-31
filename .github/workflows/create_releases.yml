@@ -127,6 +127,18 @@ jobs:
             echo "Commit message does not match expected pattern."
             exit 1
           fi
+      - name: Create and push tag if not exists
+        run: |
+          git fetch --tags
+          TAG_EXISTS=$(git tag -l "v${{ steps.extract_version.outputs.version }}")
+          if [ -z "$TAG_EXISTS" ]; then
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git tag v${{ steps.extract_version.outputs.version }}
+            git push origin v${{ steps.extract_version.outputs.version }}
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
