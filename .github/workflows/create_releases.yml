@@ -22,6 +22,7 @@ jobs:
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
             echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
 
   build-windows:
     needs: check-commit-message
