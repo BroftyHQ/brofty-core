@@ -40,6 +40,8 @@ jobs:
         run: npm run compile
       - name: Package Windows Release
         run: npm run app:build-win
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -62,6 +64,8 @@ jobs:
         run: npm run compile
       - name: Package Linux Release
         run: npm run app:build-linux
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -84,6 +88,8 @@ jobs:
         run: npm run compile
       - name: Package Mac Release
         run: npm run app:build-mac
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: Upload Mac Artifact
         uses: actions/upload-artifact@v4
         with:
