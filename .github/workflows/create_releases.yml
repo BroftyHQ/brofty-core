@@ -114,26 +114,6 @@ jobs:
   #         pip install awscli
   #         aws configure set default.region us-east-1
   #         aws s3 rm s3://${R2_BUCKET}/releases/${VERSION}/linux/ --recursive \
-  #           --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com || true
-  #     - name: Install dependencies
-  #       run: npm install
-  #     - name: Build
-  #       run: npm run compile
-  #     - name: Package Linux Release
-  #       run: npm run app:build-linux
-  #       env:
-  #         GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-  #     - name: Upload Linux Release to Cloudflare R2
-  #       env:
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-  #         R2_BUCKET: ${{ secrets.R2_BUCKET }}
-  #         R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-  #         VERSION: ${{ steps.extract_version.outputs.version }}
-  #       run: |
-  #         pip install awscli
-  #         aws configure set default.region us-east-1
-  #         aws s3 sync dist/linux/ s3://${R2_BUCKET}/releases/${VERSION}/linux/ \
   #           --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
 
   build-mac:
@@ -187,6 +167,7 @@ jobs:
         run: |
           pip install --upgrade awscli
           aws configure set default.region us-east-1
+          aws configure set default.s3.payload_signing_enabled false
           aws s3 sync dist/mac/ s3://${R2_BUCKET}/releases/${VERSION}/mac/ \
             --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com \
-            --no-progress --only-show-errors --no-checksum
+            --no-progress --only-show-errors --checksum-mode NONE
