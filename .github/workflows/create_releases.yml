@@ -166,3 +166,6 @@ jobs:
           r2-bucket: ${{ secrets.R2_BUCKET }}
           source-dir: dist/mac/
           destination-dir: releases/${{ steps.extract_version.outputs.version }}/mac/
+          multipart-size: 1024
+          max-retries: 3
+          multipart-concurrent: false
