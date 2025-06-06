@@ -185,7 +185,8 @@ jobs:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           VERSION: ${{ steps.extract_version.outputs.version }}
         run: |
-          pip install awscli
+          pip install --upgrade awscli
           aws configure set default.region us-east-1
           aws s3 sync dist/mac/ s3://${R2_BUCKET}/releases/${VERSION}/mac/ \
-            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com \
+            --no-progress --only-show-errors
