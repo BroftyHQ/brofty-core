@@ -24,8 +24,21 @@ jobs:
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
 
-  build-windows:
+  clean-dist:
     needs: check-commit-message
+    if: needs.check-commit-message.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Clean dist folder
+        run: npm run clean:dist
+
+  build-windows:
+    needs: [check-commit-message, clean-dist]
     if: needs.check-commit-message.outputs.should_run == 'true'
     runs-on: windows-latest
     steps:
@@ -44,7 +57,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
   build-linux:
-    needs: check-commit-message
+    needs: [check-commit-message, clean-dist]
     if: needs.check-commit-message.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -63,7 +76,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
   build-mac:
-    needs: check-commit-message
+    needs: [check-commit-message, clean-dist]
     if: needs.check-commit-message.outputs.should_run == 'true'
     runs-on: macos-latest
     steps:
