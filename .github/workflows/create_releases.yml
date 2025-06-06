@@ -24,117 +24,117 @@ jobs:
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
 
-  build-windows:
-    needs: [check-commit-message]
-    if: needs.check-commit-message.outputs.should_run == 'true'
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Extract version from commit message
-        id: extract_version
-        shell: bash
-        run: |
-          MSG="${{ github.event.head_commit.message }}"
-          if [[ "$MSG" =~ ^release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
-            VERSION="${BASH_REMATCH[1]}"
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-          else
-            echo "Commit message does not match expected pattern."
-            exit 1
-          fi
-      - name: Remove existing Windows release from Cloudflare R2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          VERSION: ${{ steps.extract_version.outputs.version }}
-        shell: bash
-        run: |
-          pip install awscli
-          aws configure set default.region us-east-1
-          aws s3 rm s3://${R2_BUCKET}/releases/${VERSION}/win/ --recursive \
-            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com || true
+  # build-windows:
+  #   needs: [check-commit-message]
+  #   if: needs.check-commit-message.outputs.should_run == 'true'
+  #   runs-on: windows-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20"
+  #     - name: Extract version from commit message
+  #       id: extract_version
+  #       shell: bash
+  #       run: |
+  #         MSG="${{ github.event.head_commit.message }}"
+  #         if [[ "$MSG" =~ ^release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+  #           VERSION="${BASH_REMATCH[1]}"
+  #           echo "version=$VERSION" >> $GITHUB_OUTPUT
+  #         else
+  #           echo "Commit message does not match expected pattern."
+  #           exit 1
+  #         fi
+  #     - name: Remove existing Windows release from Cloudflare R2
+  #       env:
+  #         AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  #         R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  #         R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+  #         VERSION: ${{ steps.extract_version.outputs.version }}
+  #       shell: bash
+  #       run: |
+  #         pip install awscli
+  #         aws configure set default.region us-east-1
+  #         aws s3 rm s3://${R2_BUCKET}/releases/${VERSION}/win/ --recursive \
+  #           --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com || true
 
-      - name: Install dependencies
-        run: npm install
-      - name: Build
-        run: npm run compile
-      - name: Package Windows Release
-        run: npm run app:build-win
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      - name: Upload Windows Release to Cloudflare R2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          VERSION: ${{ steps.extract_version.outputs.version }}
-        shell: bash
-        run: |
-          pip install awscli
-          aws configure set default.region us-east-1
-          aws s3 sync dist/win/ s3://${R2_BUCKET}/releases/${VERSION}/win/ \
-            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+  #     - name: Install dependencies
+  #       run: npm install
+  #     - name: Build
+  #       run: npm run compile
+  #     - name: Package Windows Release
+  #       run: npm run app:build-win
+  #       env:
+  #         GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+  #     - name: Upload Windows Release to Cloudflare R2
+  #       env:
+  #         AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  #         R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  #         R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+  #         VERSION: ${{ steps.extract_version.outputs.version }}
+  #       shell: bash
+  #       run: |
+  #         pip install awscli
+  #         aws configure set default.region us-east-1
+  #         aws s3 sync dist/win/ s3://${R2_BUCKET}/releases/${VERSION}/win/ \
+  #           --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
 
-  build-linux:
-    needs: [check-commit-message]
-    if: needs.check-commit-message.outputs.should_run == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Extract version from commit message
-        id: extract_version
-        run: |
-          MSG="${{ github.event.head_commit.message }}"
-          if [[ "$MSG" =~ ^release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
-            VERSION="${BASH_REMATCH[1]}"
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-          else
-            echo "Commit message does not match expected pattern."
-            exit 1
-          fi
-      - name: Remove existing Linux release from Cloudflare R2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          VERSION: ${{ steps.extract_version.outputs.version }}
-        run: |
-          pip install awscli
-          aws configure set default.region us-east-1
-          aws s3 rm s3://${R2_BUCKET}/releases/${VERSION}/linux/ --recursive \
-            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com || true
-      - name: Install dependencies
-        run: npm install
-      - name: Build
-        run: npm run compile
-      - name: Package Linux Release
-        run: npm run app:build-linux
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      - name: Upload Linux Release to Cloudflare R2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          VERSION: ${{ steps.extract_version.outputs.version }}
-        run: |
-          pip install awscli
-          aws configure set default.region us-east-1
-          aws s3 sync dist/linux/ s3://${R2_BUCKET}/releases/${VERSION}/linux/ \
-            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+  # build-linux:
+  #   needs: [check-commit-message]
+  #   if: needs.check-commit-message.outputs.should_run == 'true'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20"
+  #     - name: Extract version from commit message
+  #       id: extract_version
+  #       run: |
+  #         MSG="${{ github.event.head_commit.message }}"
+  #         if [[ "$MSG" =~ ^release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+  #           VERSION="${BASH_REMATCH[1]}"
+  #           echo "version=$VERSION" >> $GITHUB_OUTPUT
+  #         else
+  #           echo "Commit message does not match expected pattern."
+  #           exit 1
+  #         fi
+  #     - name: Remove existing Linux release from Cloudflare R2
+  #       env:
+  #         AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  #         R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  #         R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+  #         VERSION: ${{ steps.extract_version.outputs.version }}
+  #       run: |
+  #         pip install awscli
+  #         aws configure set default.region us-east-1
+  #         aws s3 rm s3://${R2_BUCKET}/releases/${VERSION}/linux/ --recursive \
+  #           --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com || true
+  #     - name: Install dependencies
+  #       run: npm install
+  #     - name: Build
+  #       run: npm run compile
+  #     - name: Package Linux Release
+  #       run: npm run app:build-linux
+  #       env:
+  #         GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+  #     - name: Upload Linux Release to Cloudflare R2
+  #       env:
+  #         AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  #         R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  #         R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+  #         VERSION: ${{ steps.extract_version.outputs.version }}
+  #       run: |
+  #         pip install awscli
+  #         aws configure set default.region us-east-1
+  #         aws s3 sync dist/linux/ s3://${R2_BUCKET}/releases/${VERSION}/linux/ \
+  #           --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
 
   build-mac:
     needs: [check-commit-message]

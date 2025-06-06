@@ -21,11 +21,11 @@ const builder_configs: builder.Configuration = {
   productName: "brofty-core",
   mac: {
     category: "public.app-category.developer-tools",
-    artifactName: "${productName}",
+    artifactName: "${productName}.${ext}",
     target: [
       {
         target: "dir",
-        arch: ["x64", "arm64"]
+        arch: ["x64", "arm64"] // Intel (x64) and Apple Silicon (arm64)
       },
       {
         target: "zip",
@@ -41,8 +41,18 @@ const builder_configs: builder.Configuration = {
   },
   buildVersion: version,
   win: {
-    artifactName: "${productName}.exe",
+    artifactName: "${productName}.${ext}",
     asar: true,
+    target: [
+      {
+        target: "dir",
+        arch: ["x64"]
+      },
+      {
+        target: "zip",
+        arch: ["x64"]
+      }
+    ],
     extraFiles: [],
     extraResources: [],
     files: [
@@ -50,8 +60,18 @@ const builder_configs: builder.Configuration = {
     ]
   },
   linux: {
-    artifactName: "${productName}.AppImage",
+    artifactName: "${productName}.${ext}",
     asar: true,
+    target: [
+      {
+        target: "dir",
+        arch: ["x64"]
+      },
+      {
+        target: "zip",
+        arch: ["x64"]
+      }
+    ],
     extraFiles: [],
     extraResources: [],
     files: [
