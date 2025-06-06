@@ -14,6 +14,18 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
+    resizable: true, // allow resizing
+  });
+
+  // Once the content is loaded, resize to fit the content
+  win.webContents.on("did-finish-load", () => {
+    win.webContents.executeJavaScript(`
+      const { width, height } = document.documentElement.getBoundingClientRect();
+      ({ width: Math.ceil(width), height: Math.ceil(height) });
+    `).then(({ width, height }) => {
+      // Add some padding if needed
+      win.setContentSize(width, height);
+    });
   });
   win.setMenu(null);
 

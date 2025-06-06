@@ -97,7 +97,7 @@ jobs:
           path: dist/mac/*
 
   create-release:
-    needs: [build-windows, build-linux, build-mac]
+    needs: [check-commit-message, build-windows, build-linux, build-mac]
     if: needs.check-commit-message.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     steps:

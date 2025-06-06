@@ -1,6 +1,6 @@
 {
   "name": "brofty-core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Brofty core server",
   "main": "electron/app.js",
   "scripts": {
