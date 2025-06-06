@@ -158,16 +158,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: Upload Mac Release to Cloudflare R2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          VERSION: ${{ steps.extract_version.outputs.version }}
-        run: |
-          pip install --upgrade awscli
-          aws configure set default.region us-east-1
-          aws configure set default.s3.payload_signing_enabled false
-          aws s3 sync dist/mac/ s3://${R2_BUCKET}/releases/${VERSION}/mac/ \
-            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com \
-            --no-progress --only-show-errors
+        uses: ryand56/r2-upload-action@latest
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: ${{ secrets.R2_BUCKET }}
+          source-dir: dist/mac/
+          destination-dir: releases/${{ steps.extract_version.outputs.version }}/mac/
