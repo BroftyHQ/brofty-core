@@ -170,4 +170,4 @@ jobs:
           aws configure set default.s3.payload_signing_enabled false
           aws s3 sync dist/mac/ s3://${R2_BUCKET}/releases/${VERSION}/mac/ \
             --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com \
-            --no-progress --only-show-errors --checksum-mode NONE
+            --no-progress --only-show-errors
