@@ -189,4 +189,4 @@ jobs:
           aws configure set default.region us-east-1
           aws s3 sync dist/mac/ s3://${R2_BUCKET}/releases/${VERSION}/mac/ \
             --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com \
-            --no-progress --only-show-errors
+            --no-progress --only-show-errors --no-checksums
