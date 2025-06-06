@@ -18,8 +18,46 @@ const version = packageJson.version;
 
 const builder_configs: builder.Configuration = {
   appId: "com.brofty.core",
-  mac: { category: "public.app-category.developer-tools" },
+  productName: "brofty-core",
+  mac: {
+    category: "public.app-category.developer-tools",
+    artifactName: "${productName}",
+    target: [
+      {
+        target: "dir",
+        arch: ["x64", "arm64"]
+      },
+      {
+        target: "zip",
+        arch: ["x64", "arm64"]
+      }
+    ],
+    asar: true,
+    extraFiles: [],
+    extraResources: [],
+    files: [
+      "**/*"
+    ]
+  },
   buildVersion: version,
+  win: {
+    artifactName: "${productName}.exe",
+    asar: true,
+    extraFiles: [],
+    extraResources: [],
+    files: [
+      "**/*"
+    ]
+  },
+  linux: {
+    artifactName: "${productName}.AppImage",
+    asar: true,
+    extraFiles: [],
+    extraResources: [],
+    files: [
+      "**/*"
+    ]
+  },
 };
 
 export default builder_configs;

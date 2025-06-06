@@ -3,7 +3,7 @@ name: Build Releases
 on:
   push:
     branches:
-      - '**'
+      - "**"
 
 jobs:
   check-commit-message:
@@ -33,15 +33,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: Install dependencies
-        run: npm install
-      - name: Build
-        run: npm run compile
-      - name: Package Windows Release
-        run: npm run app:build-win
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          node-version: "20"
       - name: Extract version from commit message
         id: extract_version
         shell: bash
@@ -66,7 +58,16 @@ jobs:
           pip install awscli
           aws configure set default.region us-east-1
           aws s3 rm s3://${R2_BUCKET}/releases/${VERSION}/win/ --recursive \
-            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com || true
+
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run compile
+      - name: Package Windows Release
+        run: npm run app:build-win
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: Upload Windows Release to Cloudflare R2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -90,15 +91,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: Install dependencies
-        run: npm install
-      - name: Build
-        run: npm run compile
-      - name: Package Linux Release
-        run: npm run app:build-linux
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          node-version: "20"
       - name: Extract version from commit message
         id: extract_version
         run: |
@@ -121,7 +114,15 @@ jobs:
           pip install awscli
           aws configure set default.region us-east-1
           aws s3 rm s3://${R2_BUCKET}/releases/${VERSION}/linux/ --recursive \
-            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com || true
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run compile
+      - name: Package Linux Release
+        run: npm run app:build-linux
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: Upload Linux Release to Cloudflare R2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -144,15 +145,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: Install dependencies
-        run: npm install
-      - name: Build
-        run: npm run compile
-      - name: Package Mac Release
-        run: npm run app:build-mac
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          node-version: "20"
       - name: Extract version from commit message
         id: extract_version
         run: |
@@ -175,7 +168,15 @@ jobs:
           pip install awscli
           aws configure set default.region us-east-1
           aws s3 rm s3://${R2_BUCKET}/releases/${VERSION}/mac/ --recursive \
-            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+            --endpoint-url https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com || true
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run compile
+      - name: Package Mac Release
+        run: npm run app:build-mac
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: Upload Mac Release to Cloudflare R2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
