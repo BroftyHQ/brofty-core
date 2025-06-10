@@ -1,34 +1,13 @@
-const typeDefs = `
-  type Message {
-    id: ID!
-    text: String!
-    by: String!
-    created_at: String!
-  }
+import types from './types.js';
+import queries from './queries.js';
+import mutations from './mutations.js';
+import subscriptions from './subscriptions.js';
 
-  type Query {
-    status: String!
-    getMessages: [Message]
-    getPreferenceByKey(key: String!): String
-  }
-
-  type Mutation {
-    sendMessage(message: String!): Message
-    setPreference(key: String!, value: String!): String
-  }
-
-  type PartialMessage {
-    type: String!
-    id: ID!
-    text: String!
-    by: String!
-    created_at: String
-  }
-
-  type Subscription {
-    messageStream: PartialMessage
-  }
-
-`;
+const typeDefs = [
+  types,
+  queries,
+  mutations,
+  subscriptions,
+].join('\n');
 
 export default typeDefs;

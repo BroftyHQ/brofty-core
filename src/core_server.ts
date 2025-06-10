@@ -15,6 +15,7 @@ import { IS_PRODUCTION } from "./common/constants.js";
 import get_ctx_with_auth_token from "./get_ctx_with_auth_token.js";
 import { parse } from "graphql";
 import sequelize from "./db/sqlite/client.js";
+import start_streaming_system_status from "./functions/system/start_streaming_system_status.js";
 
 interface MyContext {
   token?: string;
@@ -52,6 +53,10 @@ export default async function start_core_server() {
           (ctx.connectionParams.authorization as string) || ""
         );
         if (context.user && context.user.token) {
+          // If the user is authenticated, we can start streaming system status
+          start_streaming_system_status({
+            user_token:context.user.token
+          });
           return true;
         } else {
           return false;
@@ -116,7 +121,7 @@ export default async function start_core_server() {
     },
   });
 
-  app.get("/rest/v1/status", (req, res) => {
+  app.get("/rest/v1/status", corsConfig, (req, res) => {
     res.status(200).json({
       status: "ok",
       message: `Brofty SSR server is running in ${
@@ -148,7 +153,7 @@ export default async function start_core_server() {
   // Modified server startup
   await new Promise<void>((resolve) => {
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
-    sequelize.sync({ alter: true, logging:false }).then(() => {
+    sequelize.sync({ alter: true, logging: false }).then(() => {
       console.log("✅ Database synced successfully");
     });
   });

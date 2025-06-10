@@ -3,6 +3,7 @@ import { message_model } from "../../db/sqlite/models.js";
 import getOpenAIClient from "../../llms/openai.js";
 import tools from "../../tools/index.js";
 import pubsub from "../../pubsub/index.js";
+import getLocalLLMClient from "../../llms/local/client.js";
 
 export default async function get_response_stream({
   id,
@@ -14,6 +15,7 @@ export default async function get_response_stream({
   input: string;
 }) {
   const client = getOpenAIClient();
+  // const client = await getLocalLLMClient();
   try {
     return await client.responses.create({
       model: "gpt-4.1-mini-2025-04-14",
@@ -23,6 +25,8 @@ export default async function get_response_stream({
       stream: true,
     });
   } catch (error) {
+    console.log("Error getting response stream:", error);
+    
     // addd it to ai response stream
     await message_model.update(
       {

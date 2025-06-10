@@ -8,3 +8,6 @@ yarn-error.log
 
 # ignore all sqlite files in any directory
 *.sqlite
+
+#ignore all model files in any directory
+*.gguf
