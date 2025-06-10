@@ -15,6 +15,7 @@ export const Query = {
   ) => {
     const messages = await message_model.findAll({
       limit: 100,
+      order: [["created_at", "DESC"]],
     });
     return messages.map((message: any) => {
       return {

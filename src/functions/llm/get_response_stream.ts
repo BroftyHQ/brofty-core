@@ -1,9 +1,9 @@
 import { DateTime } from "luxon";
 import { message_model } from "../../db/sqlite/models.js";
 import getOpenAIClient from "../../llms/openai.js";
-import tools from "../../tools/index.js";
 import pubsub from "../../pubsub/index.js";
 import getLocalLLMClient from "../../llms/local/client.js";
+import get_openai_tool_schema from "../../tools/get_openai_tool_schema.js";
 
 export default async function get_response_stream({
   id,
@@ -16,6 +16,7 @@ export default async function get_response_stream({
 }) {
   const client = getOpenAIClient();
   // const client = await getLocalLLMClient();
+  const tools = await get_openai_tool_schema();
   try {
     return await client.responses.create({
       model: "gpt-4.1-mini-2025-04-14",

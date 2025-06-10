@@ -4,6 +4,7 @@ import get_stm from "../../memory/get_stm.js";
 import { toolMap } from "../../tools/index.js";
 import { message_model } from "../../db/sqlite/models.js";
 import { DateTime } from "luxon";
+import getMcpClient from "../../mcp/getMcpClient.js";
 
 export default async function generate_response(
   id,
@@ -92,10 +93,35 @@ export default async function generate_response(
           },
         });
         const functionName = event.item.name;
+        const function_scope = functionName.split("___")[0];
+        const scopedFunctionName = functionName.split("___")[1];
+
         const functionArgs = event.item.arguments;
-        const function_result = await toolMap[functionName](
+        let function_result = '';
+        if(function_scope ==="local"){
+          function_result = await toolMap[scopedFunctionName](
           JSON.parse(functionArgs)
         );
+        }else{
+          // For MCP functions, we need to call the MCP server
+          const mcp = await getMcpClient({ name: function_scope });
+          if (!mcp) {
+            console.error(`MCP client for '${function_scope}' not found.`);
+            function_result = `Error: MCP client for '${function_scope}' not found.`;
+            continue;
+          }else{
+            try {
+              const res = await mcp.callTool({
+                name: scopedFunctionName,
+                arguments: JSON.parse(functionArgs),
+              });
+              function_result = JSON.stringify(res, null, 2);
+            } catch (error) {
+              console.error(`Error calling MCP function '${scopedFunctionName}':`, error);
+              function_result = `Error: ${error.message}`;
+            }
+          }
+        }
         function_log += `\n\nFunction call result: ${JSON.stringify(
           function_result
         )}`;

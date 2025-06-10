@@ -7,6 +7,7 @@
     "clean": "rimraf electron/server",
     "compile": "yarn clean && tsc --outDir electron/server",
     "dev": "yarn tsx watch src/index.ts",
+    "dev-static": "yarn tsx src/index.ts",
     "app:dev": "electron electron/app.js",
     "app:build-win": "tsx src/electron-build/win.ts",
     "app:build-linux": "tsx src/electron-build/linux.ts",
@@ -45,6 +46,7 @@
     "sqlite3": "^5.1.7",
     "systeminformation": "^5.27.1",
     "tsx": "^4.19.4",
+    "winston": "^3.17.0",
     "ws": "^8.18.2"
   },
   "devDependencies": {

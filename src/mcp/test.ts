@@ -1,12 +1,8 @@
-import getMcpClient from "./getMcpClient.js";
+import add_availble_mcp_tools from "./add_availble_mcp_tools.js";
 
 async function main() {
-    const fetch_mcp_server = await getMcpClient({ name: "notionApi" });
-    console.log("Available tools in fetch_mcp_server:");
+  add_availble_mcp_tools("notion-mcp");
 
-    // List all available methods in the fetch_mcp_server
-    console.log(await fetch_mcp_server.listTools());
-    
 }
 
 // Run the main function

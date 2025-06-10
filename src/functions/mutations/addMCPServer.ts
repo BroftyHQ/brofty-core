@@ -1,3 +1,4 @@
+import add_availble_mcp_tools from "../../mcp/add_availble_mcp_tools.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 
 export async function addMCPServer(_parent: any, args: { name: string; command: string; args?: string[]; env?: string[] }, context: AuthorizedGraphQLContext, _info: any) {
@@ -28,6 +29,8 @@ export async function addMCPServer(_parent: any, args: { name: string; command: 
     env: Object.keys(envObj).length ? envObj : undefined,
   };
   await fs.writeFile(serversPath, JSON.stringify(serversJson, null, 2), 'utf-8');
+
+  add_availble_mcp_tools(args.name);
   return {
     name: args.name,
     command: args.command,
