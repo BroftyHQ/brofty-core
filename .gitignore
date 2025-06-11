@@ -11,3 +11,9 @@ yarn-error.log
 
 #ignore all model files in any directory
 *.gguf
+
+# qdrant storage
+qdrant_storages
+
+# local json files
+*.json

@@ -8,10 +8,12 @@ const __dirname = dirname(__filename);
 
 const PREFS_PATH = path.join(__dirname, 'preferences.json');
 
+// Check if preferences.json exists before everything else
+if (!fs.existsSync(PREFS_PATH)) {
+    fs.writeFileSync(PREFS_PATH, '{}', 'utf-8');
+}
+
 function readPreferences(): Record<string, any> {
-    if (!fs.existsSync(PREFS_PATH)) {
-        return {};
-    }
     const data = fs.readFileSync(PREFS_PATH, 'utf-8');
     try {
         return JSON.parse(data);

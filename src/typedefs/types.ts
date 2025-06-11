@@ -33,5 +33,11 @@ type SystemStatus {
   memory_usage: Float
   disk_usage: Float
 }
+
+type Tool {
+  name: String!
+  description: String!
+  mcp_server: String
+}
 `;
 export default types;

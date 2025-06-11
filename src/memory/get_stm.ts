@@ -2,7 +2,7 @@ import { message_model } from "../db/sqlite/models.js";
 
 export default async function get_stm(user, disable = false) {
   if (disable) {
-    return "";
+      return "";
   }
   const last_20_messages:any = await message_model.findAll({
     order: [["createdAt", "DESC"]],

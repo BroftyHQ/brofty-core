@@ -1,17 +1,8 @@
+import { get_available_tools } from "./available_tools_manager.js";
+
 export default async function get_openai_tool_schema() {
-  // read available tools from json file
-  const fs = await import("fs/promises");
-  const path = await import("path");
-  const toolsPath = path.resolve(
-    process.cwd(),
-    "src/tools/available_tools.json"
-  );
-  const toolsRaw = await fs.readFile(toolsPath, "utf-8");
-  const toolsJson = JSON.parse(toolsRaw);
-
+  const toolsJson = get_available_tools();
   let openaiTools = [];
-
-
   // Recursively remove any property where type is an array, and remove from required if present
   function cleanOpenAISchemaTypes(schema) {
     if (Array.isArray(schema)) {

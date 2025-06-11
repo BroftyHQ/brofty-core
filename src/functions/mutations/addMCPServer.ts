@@ -1,12 +1,17 @@
 import add_availble_mcp_tools from "../../mcp/add_availble_mcp_tools.js";
+import {
+  get_available_servers,
+  override_servers,
+} from "../../mcp/servers_manager.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 
-export async function addMCPServer(_parent: any, args: { name: string; command: string; args?: string[]; env?: string[] }, context: AuthorizedGraphQLContext, _info: any) {
-  const fs = await import('fs/promises');
-  const path = await import('path');
-  const serversPath = path.resolve(process.cwd(), 'src/mcp/servers.json');
-  const serversRaw = await fs.readFile(serversPath, 'utf-8');
-  const serversJson = JSON.parse(serversRaw);
+export async function addMCPServer(
+  _parent: any,
+  args: { name: string; command: string; args?: string[]; env?: string[] },
+  context: AuthorizedGraphQLContext,
+  _info: any
+) {
+  const serversJson = get_available_servers();
   if (!serversJson.mcpServers) serversJson.mcpServers = {};
   // Check if server with the same name already exists
   if (serversJson.mcpServers[args.name]) {
@@ -15,7 +20,7 @@ export async function addMCPServer(_parent: any, args: { name: string; command: 
   let envObj: Record<string, string> = {};
   if (args.env) {
     args.env.forEach((pair) => {
-      const idx = pair.indexOf('=');
+      const idx = pair.indexOf("=");
       if (idx > 0) {
         const k = pair.slice(0, idx).trim();
         const v = pair.slice(idx + 1).trim();
@@ -28,7 +33,7 @@ export async function addMCPServer(_parent: any, args: { name: string; command: 
     args: args.args || [],
     env: Object.keys(envObj).length ? envObj : undefined,
   };
-  await fs.writeFile(serversPath, JSON.stringify(serversJson, null, 2), 'utf-8');
+  override_servers(serversJson);
 
   add_availble_mcp_tools(args.name);
   return {

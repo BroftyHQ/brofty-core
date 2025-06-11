@@ -16,12 +16,16 @@ import get_ctx_with_auth_token from "./get_ctx_with_auth_token.js";
 import { parse } from "graphql";
 import sequelize from "./db/sqlite/client.js";
 import start_streaming_system_status from "./functions/system/start_streaming_system_status.js";
+import { start_memory_server } from "./db/qdrant/start_memory_server.js";
+import check_docker from "./common/check_docker.js";
 
 interface MyContext {
   token?: string;
 }
 
 export default async function start_core_server() {
+  // check docker is running
+  await check_docker();
   // Required logic for integrating with Express
   const app = express();
   // Our httpServer handles incoming requests to our Express app.
@@ -101,6 +105,9 @@ export default async function start_core_server() {
   });
   // Ensure we wait for our server to start
   await server.start();
+
+  // start memory server 
+  await start_memory_server();
 
   const corsConfig = cors<cors.CorsRequest>({
     maxAge: 86400,

@@ -32,6 +32,7 @@
     "@as-integrations/express5": "^1.0.0",
     "@graphql-tools/schema": "^10.0.23",
     "@modelcontextprotocol/sdk": "^1.12.1",
+    "@qdrant/js-client-rest": "^1.14.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "graphql": "^16.11.0",

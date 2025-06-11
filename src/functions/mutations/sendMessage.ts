@@ -19,7 +19,7 @@ export async function sendMessage(_parent: any, args: { message: string }, conte
       by: "You",
       id: message.id,
       text: message.text,
-      created_at: message.createdAt.toString(),
+      created_at: message.created_at.toString(),
     },
   });
 
@@ -36,13 +36,13 @@ export async function sendMessage(_parent: any, args: { message: string }, conte
       by: "AI",
       id: response.id,
       text: "",
-      created_at: response.createdAt.toString(),
+      created_at: message.created_at.toString(),
     },
   });
   generate_response(
     response.id,
     args.message,
-    response.createdAt.toString(),
+    message.created_at.toString(),
     context.user.token,
     "",
     0
