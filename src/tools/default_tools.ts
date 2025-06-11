@@ -1,4 +1,4 @@
-[
+const default_tools = [
   {
     "type": "function",
     "name": "calculate_expression",
@@ -51,3 +51,5 @@
     "strict": true
   }
 ]
+
+export default default_tools;

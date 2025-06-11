@@ -1,8 +1,7 @@
 import { AuthorizedGraphQLContext } from "../types/context.js";
 import { getPreference } from "../user_preferences/index.js";
-import { message_model, tools_model } from "../db/sqlite/models.js";
+import { mcp_server_model, message_model, tools_model } from "../db/sqlite/models.js";
 import { withAuth } from "./withAuth.js";
-import { get_available_servers } from "../mcp/servers_manager.js";
 import { getInitializedClientsInfo } from "../mcp/getMcpClient.js";
 
 export const Query = {
@@ -63,7 +62,7 @@ export const Query = {
       context: AuthorizedGraphQLContext,
       _info: any
     ) => {
-      return await get_available_servers();
+      return await mcp_server_model.findAll();
     }
   ),
   getRunningMCPServers: withAuth(

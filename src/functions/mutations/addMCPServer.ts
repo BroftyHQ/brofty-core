@@ -1,8 +1,5 @@
+import { mcp_server_model } from "../../db/sqlite/models.js";
 import add_availble_mcp_tools from "../../mcp/add_availble_mcp_tools.js";
-import {
-  get_available_servers,
-  override_servers,
-} from "../../mcp/servers_manager.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 
 export async function addMCPServer(
@@ -11,31 +8,27 @@ export async function addMCPServer(
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
-  const serversJson = get_available_servers();
-  if (!serversJson.mcpServers) serversJson.mcpServers = {};
-  // Check if server with the same name already exists
-  if (serversJson.mcpServers[args.name]) {
-    throw new Error(`MCP server with name '${args.name}' already exists.`);
-  }
-  let envObj: Record<string, string> = {};
-  if (args.env) {
-    args.env.forEach((pair) => {
-      const idx = pair.indexOf("=");
-      if (idx > 0) {
-        const k = pair.slice(0, idx).trim();
-        const v = pair.slice(idx + 1).trim();
-        envObj[k] = v;
+  mcp_server_model
+    .findOrCreate({
+      where: { name: args.name },
+      defaults: {
+        name: args.name,
+        command: args.command,
+        args: args.args || [],
+        envs: args.env || [],
+        status: "stopped", // Default status
+      },
+    })
+    .then(([server, created]) => {
+      if (created) {
+        add_availble_mcp_tools(args.name, true);
       }
+    })
+    .catch((error) => {
+      console.error("Error adding MCP server:", error);
+      throw new Error(`Failed to add MCP server: ${error.message}`);
     });
-  }
-  serversJson.mcpServers[args.name] = {
-    command: args.command,
-    args: args.args || [],
-    env: Object.keys(envObj).length ? envObj : undefined,
-  };
-  override_servers(serversJson);
 
-  add_availble_mcp_tools(args.name, true);
   return {
     name: args.name,
     command: args.command,

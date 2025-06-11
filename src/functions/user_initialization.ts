@@ -3,6 +3,7 @@ import { getPreference, setPreference } from "../user_preferences/index.js";
 import fs from "fs";
 import { tools_model } from "../db/sqlite/models.js";
 import logger from "../common/logger.js";
+import default_tools from "../tools/default_tools.js";
 
 export default async function user_initialization(): Promise<void> {
   const is_initialized = await getPreference("is_initialized");
@@ -16,15 +17,8 @@ export default async function user_initialization(): Promise<void> {
 
   // create default tools
 
-  // read from ../tools/default_tools.json
-  const defaultToolsPath = new URL(
-    "../tools/default_tools.json",
-    import.meta.url
-  );
-  const defaultTools = JSON.parse(fs.readFileSync(defaultToolsPath, "utf-8"));
-
   // create tool for each tool in default_tools.json
-  for (const tool of defaultTools) {
+  for (const tool of default_tools) {
     await tools_model.findOrCreate({
       where: {
         name: tool.name,

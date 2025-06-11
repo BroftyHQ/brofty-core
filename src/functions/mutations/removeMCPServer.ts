@@ -1,8 +1,5 @@
+import { mcp_server_model } from "../../db/sqlite/models.js";
 import { remove_availble_mcp_tools } from "../../mcp/remove_availble_mcp_tools.js";
-import {
-  get_available_servers,
-  override_servers,
-} from "../../mcp/servers_manager.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 
 export async function removeMCPServer(
@@ -11,12 +8,9 @@ export async function removeMCPServer(
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
-  const serversJson = get_available_servers();
-  if (!serversJson.mcpServers || !serversJson.mcpServers[args.name]) {
-    return false;
-  }
-  delete serversJson.mcpServers[args.name];
-  override_servers(serversJson);
+  await mcp_server_model.destroy({
+    where: { name: args.name },
+  });
   remove_availble_mcp_tools(args.name);
   return true;
 }

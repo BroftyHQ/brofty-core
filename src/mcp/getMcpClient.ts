@@ -1,6 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { get_available_servers } from "./servers_manager.js";
+import { mcp_server_model } from "../db/sqlite/models.js";
 
 // Module-level cache for clients
 const clientCache: Map<string, Client> = new Map();
@@ -22,16 +22,17 @@ export default async function getMcpClient({
   let transport: StdioClientTransport | null = null; // Declare transport for finally block
 
   try {
-    const servers = get_available_servers();
-    const server = servers["mcpServers"][name];
+    const server = await mcp_server_model.findOne({
+      where: { name },
+    });
     if (!server) {
       throw new Error(`Server with name "${name}" not found in servers`);
     }
     // Pass command and args separately to avoid accidental backslash issues
     transport = new StdioClientTransport({
-      command: server.command, // Use the command from servers
-      args: server.args, // Use the args from servers
-      env: server.env || {}, // Use the env from servers, default to empty object
+      command: server.dataValues.command, // Use the command from servers
+      args: server.dataValues.args, // Use the args from servers
+      env: server.dataValues.envs || {}, // Use the env from servers, default to empty object
     });
 
     client = new Client({
