@@ -13,7 +13,7 @@ yarn-error.log
 *.gguf
 
 # qdrant storage
-qdrant_storages
+qdrant_storage
 
 # local json files
 *.json
