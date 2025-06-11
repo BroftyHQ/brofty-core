@@ -21,30 +21,52 @@ export default async function getMcpClient({
   let client: Client | null = null; // Use the Client class from the SDK
   let transport: StdioClientTransport | null = null; // Declare transport for finally block
 
-  const servers = get_available_servers();
+  try {
+    const servers = get_available_servers();
+    const server = servers["mcpServers"][name];
+    if (!server) {
+      throw new Error(`Server with name "${name}" not found in servers`);
+    }
+    // Pass command and args separately to avoid accidental backslash issues
+    transport = new StdioClientTransport({
+      command: server.command, // Use the command from servers
+      args: server.args, // Use the args from servers
+      env: server.env || {}, // Use the env from servers, default to empty object
+    });
 
-  const server = servers["mcpServers"][name];
-  if (!server) {
-    throw new Error(`Server with name "${name}" not found in servers`);
+    client = new Client({
+      name: "brofty", // A name for your client
+      version: "1.0.0", // A version for your client
+    });
+    await client.connect(transport); // Set the transport for the client
+    // Cache the client instance and transport
+    clientCache.set(name, client);
+    clientInitTimes.set(name, Date.now()); // Track when the client was initialized
+    clientTransports.set(name, transport); // Track transport for cleanup
+    // Return the connected client instance
+    return client;
+  } catch (err) {
+    // Cleanup if client or transport was partially created
+    if (client) {
+      try {
+        client.close();
+      } catch {}
+    }
+    if (transport && typeof transport.close === "function") {
+      try {
+        await transport.close();
+      } catch {}
+    }
+    // Remove from caches if present
+    clientCache.delete(name);
+    clientInitTimes.delete(name);
+    clientTransports.delete(name);
+    throw new Error(
+      `Failed to launch or connect MCP client '${name}': ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
   }
-  // Pass command and args separately to avoid accidental backslash issues
-  transport = new StdioClientTransport({
-    command: server.command, // Use the command from servers
-    args: server.args, // Use the args from servers
-    env: server.env || {}, // Use the env from servers, default to empty object
-  });
-
-  client = new Client({
-    name: "brofty", // A name for your client
-    version: "1.0.0", // A version for your client
-  });
-  client.connect(transport); // Set the transport for the client
-  // Cache the client instance and transport
-  clientCache.set(name, client);
-  clientInitTimes.set(name, Date.now()); // Track when the client was initialized
-  clientTransports.set(name, transport); // Track transport for cleanup
-  // Return the connected client instance
-  return client;
 }
 
 // Exported utility to get info about initialized clients
