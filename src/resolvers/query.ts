@@ -4,6 +4,7 @@ import { message_model } from "../db/sqlite/models.js";
 import { withAuth } from "./withAuth.js";
 import { get_available_tools } from "../tools/available_tools_manager.js";
 import { get_available_servers } from "../mcp/servers_manager.js";
+import { getInitializedClientsInfo } from "../mcp/getMcpClient.js";
 
 export const Query = {
   status: () => {
@@ -77,6 +78,22 @@ export const Query = {
           };
         }
       );
+    }
+  ),
+  getRunningMCPServers: withAuth(
+    async (
+      _parent: any,
+      _args: any,
+      context: AuthorizedGraphQLContext,
+      _info: any
+    ) => {
+      const list = getInitializedClientsInfo();
+      return list.map((client) => {
+        return {
+          name: client.name,
+          running_for: client.runningForMs.toString(),
+        };
+      });
     }
   ),
   getAvailableTools: withAuth(

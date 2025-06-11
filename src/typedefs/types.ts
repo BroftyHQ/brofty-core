@@ -20,6 +20,11 @@ type MCPServer {
   env: [String]
 }
 
+type RunningMCPServer {
+  name: String!
+  running_for: String!
+}
+
 type PartialMessage {
   type: String!
   id: ID!

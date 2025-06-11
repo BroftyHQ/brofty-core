@@ -5,6 +5,7 @@ type Query {
   getPreferenceByKey(key: String!): String
   getLocalLLMStatus: LocalLLMStatus!
   getAvailableMCPServers: [MCPServer]
+  getRunningMCPServers: [RunningMCPServer]
   getAvailableTools: [Tool]
 }
 `;

@@ -53,7 +53,6 @@ export function getInitializedClientsInfo() {
   return Array.from(clientCache.entries()).map(([name, client]) => ({
     name,
     runningForMs: now - (clientInitTimes.get(name) ?? now),
-    client,
   }));
 }
 

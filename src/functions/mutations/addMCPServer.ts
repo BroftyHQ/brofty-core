@@ -35,7 +35,7 @@ export async function addMCPServer(
   };
   override_servers(serversJson);
 
-  add_availble_mcp_tools(args.name);
+  add_availble_mcp_tools(args.name, true);
   return {
     name: args.name,
     command: args.command,
