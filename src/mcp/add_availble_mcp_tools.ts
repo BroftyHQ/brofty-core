@@ -1,24 +1,23 @@
 import logger from "../common/logger.js";
-import {
-  get_available_tools,
-  override_available_tools,
-} from "../tools/available_tools_manager.js";
+import { tools_model } from "../db/sqlite/models.js";
 import getMcpClient from "./getMcpClient.js";
+import { remove_availble_mcp_tools } from "./remove_availble_mcp_tools.js";
 
-export default async function add_availble_mcp_tools(name: string, first_time = false) {
+export default async function add_availble_mcp_tools(
+  name: string,
+  first_time = false
+) {
   let mcp = null;
 
   try {
-    mcp=await getMcpClient({ name });
-  }catch (error) {
+    mcp = await getMcpClient({ name });
+  } catch (error) {
     logger.error(`Failed to get MCP client for '${name}': ${error.message}`);
     if (first_time) {
-      logger.info('Removing MCP server from available servers due to client error.');
-      const serversJson = get_available_tools();
-      if (serversJson[name]) {
-        delete serversJson[name];
-        override_available_tools(serversJson);
-      }
+      logger.info(
+        "Removing MCP server from available servers due to client error."
+      );
+      await remove_availble_mcp_tools(name);
     } else {
       return;
     }
@@ -33,10 +32,14 @@ export default async function add_availble_mcp_tools(name: string, first_time = 
     return;
   }
 
-  const toolsJson = get_available_tools();
-  if (!toolsJson[name]) toolsJson[name] = [];
-  toolsJson[name] = toolsJson[name].concat(tools);
-  override_available_tools(toolsJson);
+  for (const tool of tools) {
+    await tools_model.upsert({
+      name: tool.name,
+      description: tool.description,
+      defination: tool,
+      mcp_server: name,
+    });
+  }
   logger.info(
     `Added available tools for MCP server '${name}': ${tools.length} tools.`
   );

@@ -1,8 +1,7 @@
 import { AuthorizedGraphQLContext } from "../types/context.js";
 import { getPreference } from "../user_preferences/index.js";
-import { message_model } from "../db/sqlite/models.js";
+import { message_model, tools_model } from "../db/sqlite/models.js";
 import { withAuth } from "./withAuth.js";
-import { get_available_tools } from "../tools/available_tools_manager.js";
 import { get_available_servers } from "../mcp/servers_manager.js";
 import { getInitializedClientsInfo } from "../mcp/getMcpClient.js";
 
@@ -64,20 +63,7 @@ export const Query = {
       context: AuthorizedGraphQLContext,
       _info: any
     ) => {
-      const serversJson = get_available_servers();
-      return Object.entries(serversJson.mcpServers || {}).map(
-        ([name, config]) => {
-          const c = config as any;
-          return {
-            name,
-            command: c.command,
-            args: c.args || [],
-            env: c.env
-              ? Object.entries(c.env).map(([k, v]) => `${k}=********`)
-              : [],
-          };
-        }
-      );
+      return await get_available_servers();
     }
   ),
   getRunningMCPServers: withAuth(
@@ -103,13 +89,8 @@ export const Query = {
       context: AuthorizedGraphQLContext,
       _info: any
     ) => {
-      const toolsJson = get_available_tools();
-      // Aggregate all tools, tagging non-local ones with their key as mcp_server
-      const allTools = Object.entries(toolsJson).flatMap(([key, tools]) => {
-        if (key === "local") return tools as any[];
-        return (tools as any[]).map((tool) => ({ ...tool, mcp_server: key }));
-      });
-      return allTools;
+      const tools = await tools_model.findAll({});
+      return tools;
     }
   ),
 };

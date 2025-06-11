@@ -18,6 +18,7 @@ import sequelize from "./db/sqlite/client.js";
 import start_streaming_system_status from "./functions/system/start_streaming_system_status.js";
 import { start_memory_server } from "./db/qdrant/start_memory_server.js";
 import check_docker from "./common/check_docker.js";
+import user_initialization from "./functions/user_initialization.js";
 
 interface MyContext {
   token?: string;
@@ -162,6 +163,7 @@ export default async function start_core_server() {
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
     sequelize.sync({ alter: true, logging: false }).then(() => {
       console.log("✅ Database synced successfully");
+      user_initialization();
     });
   });
   console.log(`🚀 Brofty Core Server ready`);

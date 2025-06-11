@@ -5,7 +5,7 @@ import get_openai_tool_schema from "../../tools/get_openai_tool_schema.js";
   const tools = await get_openai_tool_schema();
   console.log(JSON.stringify(tools, null, 2));
   
-  const client = getOpenAIClient();
+  const client = await getOpenAIClient();
 
   const res = await client.responses.create({
     model: "gpt-4.1-mini-2025-04-14",

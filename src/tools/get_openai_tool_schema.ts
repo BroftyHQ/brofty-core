@@ -1,7 +1,10 @@
-import { get_available_tools } from "./available_tools_manager.js";
+import { tools_model } from "../db/sqlite/models.js";
 
 export default async function get_openai_tool_schema() {
-  const toolsJson = get_available_tools();
+  const toolsJson = await tools_model.findAll({
+    attributes: ["defination", "mcp_server"],
+  });
+
   let openaiTools = [];
   // Recursively remove any property where type is an array, and remove from required if present
   function cleanOpenAISchemaTypes(schema) {
@@ -36,25 +39,21 @@ export default async function get_openai_tool_schema() {
     return schema;
   }
 
-  for (const [name, tools] of Object.entries(toolsJson)) {
-    if (!Array.isArray(tools)) continue;
-    for (const tool of tools) {
-      if (
-        tool.name &&
-        tool.description &&
-        (tool.parameters || tool.inputSchema)
-      ) {
-        const params = cleanOpenAISchemaTypes(
-          JSON.parse(JSON.stringify(tool.parameters || tool.inputSchema))
-        );
-        openaiTools.push({
-          type: "function",
-          name: `${name}___${tool.name}`,
-          description: tool.description,
-          parameters: params,
-        });
-      }
-    }
+  for (const tool of toolsJson) {
+    const mcp_server = tool.dataValues.mcp_server;
+    const tool_def = tool.dataValues.defination;
+
+    if (!tool_def.name || !tool_def.description) continue;
+    const params = cleanOpenAISchemaTypes(
+      JSON.parse(JSON.stringify(tool_def.parameters || tool_def.inputSchema))
+    );
+
+    openaiTools.push({
+      type: "function",
+      name: `${mcp_server}___${tool_def.name}`,
+      description: tool_def.description,
+      parameters: params,
+    });
   }
 
   return openaiTools;

@@ -5,6 +5,7 @@ import { toolMap } from "../../tools/index.js";
 import { message_model } from "../../db/sqlite/models.js";
 import { DateTime } from "luxon";
 import getMcpClient from "../../mcp/getMcpClient.js";
+import logger from "../../common/logger.js";
 
 export default async function generate_response(
   id,
@@ -82,6 +83,9 @@ export default async function generate_response(
       // console.log(`Function call arguments: ${JSON.stringify(event)}`);
     } else if (event.type == "response.output_item.done") {
       if (event.item.type == "function_call") {
+        logger.info(
+          `Function call detected: ${event.item.name} with arguments: ${event.item.arguments}`
+        );
         function_log += `\n\nFunction call: ${event.item.name} with arguments: ${event.item.arguments}`;
         pubsub.publish(`MESSGAE_STREAM:${user}`, {
           messageStream: {

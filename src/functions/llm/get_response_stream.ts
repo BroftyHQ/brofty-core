@@ -14,7 +14,7 @@ export default async function get_response_stream({
   user: string;
   input: string;
 }) {
-  const client = getOpenAIClient();
+  const client = await getOpenAIClient();
   // const client = await getLocalLLMClient();
   const tools = await get_openai_tool_schema();
   try {
