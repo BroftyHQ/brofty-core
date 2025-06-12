@@ -11,3 +11,28 @@ brofty-core is the core engine for Brofty AI, an extensible, local-first AI assi
 - Tooling system for custom functions (calculators, HTTP clients, etc.)
 - Electron-based server for desktop integration
 - SQLite database for persistent storage
+
+## Getting Started
+
+To run brofty-core locally:
+
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/BroftyHQ/brofty-core.git
+   
+   cd brofty-core
+   ```
+2. **Install dependencies:**
+   ```sh
+   yarn install
+   ```
+3. **Compile the TypeScript code:**
+   ```sh
+   yarn compile
+   ```
+4. **Start the server:**
+   ```sh
+   yarn start
+   ```
+
+Once the server is running, visit [brofty.com](https://www.brofty.com) to use your local core server.
