@@ -1,6 +1,6 @@
 import { message_model } from "../db/sqlite/models.js";
 
-export default async function get_stm(user, disable = false) {
+export default async function get_stm(disable = false) {
   if (disable) {
       return "";
   }

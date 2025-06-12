@@ -50,9 +50,11 @@ export default async function get_openai_tool_schema() {
 
     openaiTools.push({
       type: "function",
-      name: `${mcp_server}___${tool_def.name}`,
-      description: tool_def.description,
-      parameters: params,
+      function: {
+        name: `${mcp_server}___${tool_def.name}`,
+        description: tool_def.description,
+        parameters: params,
+      },
     });
   }
 

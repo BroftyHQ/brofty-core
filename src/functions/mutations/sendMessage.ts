@@ -12,12 +12,6 @@ export async function sendMessage(
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
-  // check for openai key in preferences
-  const openaiKey = await getPreference("OPENAI_KEY");
-  if (!openaiKey) {
-    throw new Error("OpenAI API key is not set in preferences.");
-  }
-
   const message: any = await message_model.create({
     id: nanoid(),
     text: args.message,
@@ -25,7 +19,7 @@ export async function sendMessage(
     created_at: DateTime.now().toMillis(),
     updated_at: DateTime.now().toMillis(),
   });
-  pubsub.publish(`MESSGAE_STREAM:${context.user.token}`, {
+  pubsub.publish(`MESSGAE_STREAM`, {
     messageStream: {
       type: "NEW_MESSAGE",
       by: "You",
@@ -42,7 +36,7 @@ export async function sendMessage(
     created_at: DateTime.now().toMillis(),
     updated_at: DateTime.now().toMillis(),
   });
-  pubsub.publish(`MESSGAE_STREAM:${context.user.token}`, {
+  pubsub.publish(`MESSGAE_STREAM`, {
     messageStream: {
       type: "NEW_MESSAGE",
       by: "AI",
@@ -51,13 +45,13 @@ export async function sendMessage(
       created_at: message.created_at.toString(),
     },
   });
-  generate_response(
-    response.id,
-    args.message,
-    message.created_at.toString(),
-    context.user.token,
-    "",
-    0
-  );
+  generate_response({
+    id: response.id,
+    user_token: context.user.token,
+    messsage: args.message,
+    initial_response_time: message.created_at.toString(),
+    fn_log: "",
+    recursion_count: 0,
+  });
   return message;
 }

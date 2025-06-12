@@ -1,17 +1,17 @@
 import OpenAI from "openai";
-import { getPreference } from "../user_preferences/index.js";
 
-let cachedKey: string | undefined;
 let cachedClient: OpenAI | undefined;
+let lastInitTime: number | undefined;
+const CLIENT_INVALIDATE_INTERVAL = 20 * 60 * 1000; // 20 minutes in ms
 
-async function getOpenAIClient() {
-  const currentKey = await getPreference("OPENAI_KEY");
-  if (!currentKey) {
-    throw new Error("OpenAI API key is not set in user preferences.");
-  }
-  if (!cachedClient || cachedKey !== currentKey) {
-    cachedClient = new OpenAI({ apiKey: currentKey });
-    cachedKey = currentKey;
+async function getOpenAIClient(token: string): Promise<OpenAI> {
+  const now = Date.now();
+  if (!cachedClient || !lastInitTime || (now - lastInitTime) > CLIENT_INVALIDATE_INTERVAL) {
+    cachedClient = new OpenAI({
+      baseURL: "http://localhost:1337/rest/v1/openai-proxy", // Use the local OpenAI server
+      apiKey: token,
+    });
+    lastInitTime = now;
   }
   return cachedClient;
 }

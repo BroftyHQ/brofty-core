@@ -11,7 +11,7 @@ export const Subscription = {
       info
     ) => {
       return pubsub.asyncIterableIterator([
-        `MESSGAE_STREAM:${context.user.token}`,
+        `MESSGAE_STREAM`,
       ]);
     }),
   },
@@ -23,7 +23,7 @@ export const Subscription = {
       info
     ) => {
       return pubsub.asyncIterableIterator([
-        `SYSTEM_STATUS:${context.user.token}`,
+        `SYSTEM_STATUS`,
       ]);
     }),
   },

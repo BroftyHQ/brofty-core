@@ -2,27 +2,31 @@ import { DateTime } from "luxon";
 import { message_model } from "../../db/sqlite/models.js";
 import getOpenAIClient from "../../llms/openai.js";
 import pubsub from "../../pubsub/index.js";
-import getLocalLLMClient from "../../llms/local/client.js";
-import get_openai_tool_schema from "../../tools/get_openai_tool_schema.js";
+import get_openai_tool_schema from "../../tools/get_openai_tool_schema.js";;
 
 export default async function get_response_stream({
   id,
-  user,
+  user_token,
   input,
 }: {
   id: string;
-  user: string;
+  user_token: string;
   input: string;
 }) {
-  const client = await getOpenAIClient();
+  const client = await getOpenAIClient(user_token);
   // const client = await getLocalLLMClient();
   const tools = await get_openai_tool_schema();
   try {
-    return await client.responses.create({
+    return await client.chat.completions.create({
       model: "gpt-4.1-mini-2025-04-14",
       tools: tools,
       tool_choice: "auto",
-      input,
+      messages: [
+        {
+          role: "user",
+          content: input,
+        },
+      ],
       stream: true,
     });
   } catch (error) {
@@ -36,7 +40,7 @@ export default async function get_response_stream({
       },
       { where: { id } }
     );
-    pubsub.publish(`MESSGAE_STREAM:${user}`, {
+    pubsub.publish(`MESSGAE_STREAM`, {
       messageStream: {
         type: "COMPLETE_MESSAGE",
         id,

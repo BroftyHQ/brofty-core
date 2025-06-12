@@ -21,7 +21,7 @@ export default async function start_streaming_system_status({
       };
 
       // Assuming pubsub is defined and has a method to publish messages
-      pubsub.publish(`SYSTEM_STATUS:${user_token}`, {systemStatus:systemStatus});
+      pubsub.publish(`SYSTEM_STATUS`, {systemStatus:systemStatus});
       
     } catch (error) {
       console.error("Error fetching system status:", error);
