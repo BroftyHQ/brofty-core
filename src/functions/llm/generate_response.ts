@@ -81,7 +81,7 @@ export default async function generate_response({
       const first_choice = event.choices[0];
       if (first_choice.delta.content) {
         chunk_cache += event.choices[0].delta.content || "";
-        pubsub.publish(`MESSGAE_STREAM`, {
+        pubsub.publish(`MESSAGE_STREAM`, {
           messageStream: {
             type: "APPEND_MESSAGE",
             id,
@@ -127,7 +127,7 @@ export default async function generate_response({
         if (chunk_cache.length > 0) {
           // chunks finished
           finalText += chunk_cache;
-          pubsub.publish(`MESSGAE_STREAM`, {
+          pubsub.publish(`MESSAGE_STREAM`, {
             messageStream: {
               type: "COMPLETE_MESSAGE",
               id,
@@ -151,7 +151,7 @@ export default async function generate_response({
             // console.log(`Function scope: ${function_scope}, Scoped function name: ${scopedFunctionName}`);
 
             
-            pubsub.publish(`MESSGAE_STREAM`, {
+            pubsub.publish(`MESSAGE_STREAM`, {
               messageStream: {
                 type: "APPEND_MESSAGE",
                 id,

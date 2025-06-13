@@ -19,7 +19,7 @@ export async function sendMessage(
     created_at: DateTime.now().toMillis(),
     updated_at: DateTime.now().toMillis(),
   });
-  pubsub.publish(`MESSGAE_STREAM`, {
+  pubsub.publish(`MESSAGE_STREAM`, {
     messageStream: {
       type: "NEW_MESSAGE",
       by: "You",
@@ -36,7 +36,7 @@ export async function sendMessage(
     created_at: DateTime.now().toMillis(),
     updated_at: DateTime.now().toMillis(),
   });
-  pubsub.publish(`MESSGAE_STREAM`, {
+  pubsub.publish(`MESSAGE_STREAM`, {
     messageStream: {
       type: "NEW_MESSAGE",
       by: "AI",

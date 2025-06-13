@@ -11,7 +11,7 @@ export const Subscription = {
       info
     ) => {
       return pubsub.asyncIterableIterator([
-        `MESSGAE_STREAM`,
+        `MESSAGE_STREAM`,
       ]);
     }),
   },

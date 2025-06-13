@@ -2,7 +2,8 @@ import { DateTime } from "luxon";
 import { message_model } from "../../db/sqlite/models.js";
 import getOpenAIClient from "../../llms/openai.js";
 import pubsub from "../../pubsub/index.js";
-import get_openai_tool_schema from "../../tools/get_openai_tool_schema.js";;
+import get_openai_tool_schema from "../../tools/get_openai_tool_schema.js";import logger from "../../common/logger.js";
+;
 
 export default async function get_response_stream({
   id,
@@ -30,26 +31,27 @@ export default async function get_response_stream({
       stream: true,
     });
   } catch (error) {
-    console.log("Error getting response stream:", error);
+    // console.log("Error getting response stream:", error);
+    logger.error(`Error getting response: ${error.message}`);
     
     // addd it to ai response stream
     await message_model.update(
       {
-        text: `Error: ${error.error.message}`,
+        text: `Error: ${error.message}`,
         updated_at: DateTime.now().toMillis(),
       },
       { where: { id } }
     );
-    pubsub.publish(`MESSGAE_STREAM`, {
+    pubsub.publish(`MESSAGE_STREAM`, {
       messageStream: {
         type: "COMPLETE_MESSAGE",
         id,
-        text: `Error: ${error.error.message}`,
+        text: `Error: ${error.message}`,
         by: "AI",
         created_at: DateTime.now().toMillis(),
       },
     });
     return null;
-    // throw new Error(`Error getting response stream: ${error.error.message}`);
+    // throw new Error(`Error getting response stream: ${error.message}`);
   }
 }
