@@ -8,26 +8,26 @@ import get_openai_tool_schema from "../../tools/get_openai_tool_schema.js";impor
 export default async function get_response_stream({
   id,
   user_token,
-  input,
+  messages,
 }: {
   id: string;
   user_token: string;
-  input: string;
+  messages: {
+    role: "user" | "assistant" | "system" | "tool";
+    tool_call_id?: string; // Optional, only for tool messages
+    content: string;
+  }[];
 }) {
   const client = await getOpenAIClient(user_token);
   // const client = await getLocalLLMClient();
   const tools = await get_openai_tool_schema();
   try {
     return await client.chat.completions.create({
-      model: "gpt-4.1-mini-2025-04-14",
+      model: "openai/gpt-4o-mini",
       tools: tools,
       tool_choice: "auto",
-      messages: [
-        {
-          role: "user",
-          content: input,
-        },
-      ],
+      // @ts-ignore
+      messages,
       stream: true,
     });
   } catch (error) {

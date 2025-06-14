@@ -50,7 +50,7 @@ export async function sendMessage(
     user_token: context.user.token,
     messsage: args.message,
     initial_response_time: message.created_at.toString(),
-    fn_log: "",
+    tool_calls: [],
     recursion_count: 0,
   });
   return message;

@@ -10,6 +10,7 @@ import getMcpClient from "../../mcp/getMcpClient.js";
 let chunk_cache: string = ``;
 type FunctionCache = {
   name: string;
+  tool_call_id: string;
   arguments: string;
 };
 
@@ -22,22 +23,26 @@ export default async function generate_response({
   user_token,
   messsage,
   initial_response_time,
-  fn_log = "",
+  tool_calls = [],
   recursion_count,
 }: {
   id: string;
   user_token: string;
   messsage: string;
   initial_response_time: string;
-  fn_log?: string;
+  tool_calls?: {
+    role: "tool";
+    tool_call_id: string;
+    content: string;
+    name: string;
+    arguments: string;
+  }[];
   recursion_count?: number;
 }) {
   let finalText = ``;
-  let function_log = `${fn_log}\n`;
-  let initial_fn_log_length = fn_log.length;
   let has_function_calls = false;
 
-  if (recursion_count > 10) {
+  if (recursion_count > 5) {
     await message_model.update(
       {
         text: `Skipped - exceeded max recursion calls`,
@@ -49,27 +54,61 @@ export default async function generate_response({
   }
   recursion_count++;
   const current_stm = await get_stm();
-  const stream = await get_response_stream({
-    id,
-    user_token,
-    input: `
-    You are a helpful, concise assistant.
+
+  const messages: {
+    role: "system" | "user" | "assistant" | "tool";
+    tool_call_id?: string;
+    tool_calls?: {
+      id: string;
+      function: {
+        name: string;
+        arguments: string;
+      };
+    }[];
+    content: string;
+  }[] = [
+    {
+      role: "system",
+      content: `You are a helpful, concise assistant.
     You have access to the last couple of messages in this chat.
     Keep your responses focused and as brief as possible, unless the user requests detailed explanation.
     When responding with code, ensure it is correct and properly formatted.
-    If you are unsure, say so honestly.
-    ${
-      current_stm.length > 0
-        ? `
-        Last messages in this chat:
+    If you are unsure, say so honestly.`,
+    },
+    ...current_stm,
+    {
+      role: "user",
+      content: messsage,
+    },
+  ];
 
-        ${current_stm}
-        `
-        : ""
+  if (tool_calls.length > 0) {
+    messages.push({
+      role: "assistant",
+      content: null,
+      tool_calls: tool_calls.map((tool_call) => ({
+        id: tool_call.tool_call_id,
+        type: "function",
+        function: {
+          name: tool_call.name,
+          arguments: tool_call.arguments,
+        },
+      })),
+    });
+    // add tool calls to the messages
+    for (const tool_call of tool_calls) {
+      messages.push({
+        role: "tool",
+        tool_call_id: tool_call.tool_call_id,
+        content: tool_call.content,
+      });
     }
+  }
 
-    ${fn_log}
-    `,
+  const stream = await get_response_stream({
+    id,
+    user_token,
+    messages,
   });
   if (stream === null) {
     return;
@@ -109,10 +148,13 @@ export default async function generate_response({
             function_cache[index] = {
               name: "",
               arguments: "",
+              tool_call_id: "",
             };
           }
           function_cache[index].name =
             first_choice.delta.tool_calls[0].function.name;
+          function_cache[index].tool_call_id =
+            first_choice.delta.tool_calls[0].id;
         }
         if (first_choice.delta.tool_calls[0].function.arguments) {
           const index = first_choice.delta.tool_calls[0].index;
@@ -138,19 +180,18 @@ export default async function generate_response({
           });
           chunk_cache = "";
         } else if (Object.keys(function_cache).length > 0) {
-          
           for await (const function_call of Object.values(function_cache)) {
             const { name, arguments: args } = function_call;
             logger.info(
-              `Function call detected: ${name} with arguments: ${args}`
+              `Function call detected: ${name} with arguments: ${args} - Recursion count: ${recursion_count}`
             );
 
+            const functionCallId = function_call.tool_call_id;
             const functionName = name;
             const function_scope = functionName.split("___")[0];
             const scopedFunctionName = functionName.split("___")[1];
             // console.log(`Function scope: ${function_scope}, Scoped function name: ${scopedFunctionName}`);
 
-            
             pubsub.publish(`MESSAGE_STREAM`, {
               messageStream: {
                 type: "APPEND_MESSAGE",
@@ -162,10 +203,8 @@ export default async function generate_response({
               },
             });
 
-            function_log += `\n\nFunction call: ${functionName} with arguments: ${JSON.stringify(
-              args
-            )}`;
             let parsedArgs = null;
+            let function_log = "";
             try {
               parsedArgs = JSON.parse(args);
             } catch (error) {
@@ -186,7 +225,7 @@ export default async function generate_response({
                   );
                 } catch (error) {
                   console.error(
-                    `Error calling local function '${functionName}':`,
+                    `Function '${functionName}' returned an error:`,
                     error
                   );
                   function_result = `Error: ${error.message}`;
@@ -219,12 +258,18 @@ export default async function generate_response({
                   }
                 }
               }
-              function_log += `\n\nFunction call result: ${JSON.stringify(
-                function_result
-              )}`;
+              function_log += `${JSON.stringify(function_result)}`;
             }
+            tool_calls.push({
+              role: "tool",
+              tool_call_id: functionCallId,
+              content: function_log,
+              name: name,
+              arguments: args,
+            });
           }
-          has_function_calls = initial_fn_log_length < function_log.length;
+
+          has_function_calls = tool_calls.length > 0;
           // clear the function cache
           function_cache = {};
         }
@@ -241,7 +286,7 @@ export default async function generate_response({
       user_token,
       messsage,
       initial_response_time,
-      fn_log: function_log,
+      tool_calls,
       recursion_count,
     });
 
