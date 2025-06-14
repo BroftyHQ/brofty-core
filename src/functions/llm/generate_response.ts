@@ -42,7 +42,7 @@ export default async function generate_response({
   let finalText = ``;
   let has_function_calls = false;
 
-  if (recursion_count > 5) {
+  if (recursion_count > 10) {
     await message_model.update(
       {
         text: `Skipped - exceeded max recursion calls`,
