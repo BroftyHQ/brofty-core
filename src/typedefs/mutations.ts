@@ -5,6 +5,7 @@ type Mutation {
   addMCPServer(name: String!, command: String!, args: [String], env: String): MCPServer
   removeMCPServer(name: String!): Boolean
   stopMCPServer(name: String!): Boolean
+  setPreferredLLM(llmId: String!): Boolean
 }
 `;
 export default mutations;

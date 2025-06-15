@@ -7,6 +7,7 @@ type Query {
   getAvailableMCPServers: [MCPServer]
   getRunningMCPServers: [RunningMCPServer]
   getAvailableTools: [Tool]
+  getSelectedPreferredLLM: String
 }
 `;
 export default queries;

@@ -3,6 +3,7 @@ import { getPreference } from "../user_preferences/index.js";
 import { mcp_server_model, message_model, tools_model } from "../db/sqlite/models.js";
 import { withAuth } from "./withAuth.js";
 import { getInitializedClientsInfo } from "../mcp/getMcpClient.js";
+import get_user_preferred_llm from "../functions/llm/get_user_preferred_llm.js";
 
 export const Query = {
   status: () => {
@@ -90,6 +91,18 @@ export const Query = {
     ) => {
       const tools = await tools_model.findAll({});
       return tools;
+    }
+  ),
+  getSelectedPreferredLLM: withAuth(
+    async (
+      _parent: any,
+      _args: any,
+      context: AuthorizedGraphQLContext,
+      _info: any
+    ) => {
+      const preferredLLM = await get_user_preferred_llm();
+
+      return preferredLLM;
     }
   ),
 };
