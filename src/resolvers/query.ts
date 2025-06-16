@@ -63,7 +63,15 @@ export const Query = {
       context: AuthorizedGraphQLContext,
       _info: any
     ) => {
-      return await mcp_server_model.findAll();
+      return (await mcp_server_model.findAll()).map((server:any) => {
+        return {
+          name: server.name,
+          command: server.command,
+          args: server.args,
+          env: JSON.stringify(server.envs),
+          status: server.status,
+        };
+      });
     }
   ),
   getRunningMCPServers: withAuth(

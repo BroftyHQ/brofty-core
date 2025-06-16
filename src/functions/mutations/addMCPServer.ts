@@ -10,9 +10,18 @@ export async function addMCPServer(
   _info: any
 ) {
   // if args.env is a string, parse it as JSON and validate it as valid key value pairs
+  let envArray: string[] = [];
   if (typeof args.env === "string") {
     try {
-      args.env = JSON.parse(args.env);
+      const parsed = JSON.parse(args.env);
+      if (Array.isArray(parsed)) {
+        envArray = parsed;
+      } else if (typeof parsed === "object" && parsed !== null) {
+        // If env is an object, convert to array of key=value strings
+        envArray = Object.entries(parsed).map(([k, v]) => `${k}=${v}`);
+      } else {
+        throw new Error("env must be a JSON array or object");
+      }
     } catch (error) {
       throw new Error("Invalid JSON string for env");
     }
@@ -43,6 +52,6 @@ export async function addMCPServer(
     name: args.name,
     command: args.command,
     args: args.args || [],
-    env: args.env || [],
+    env: envArray.toString(),
   };
 }

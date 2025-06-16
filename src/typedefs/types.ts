@@ -17,7 +17,7 @@ type MCPServer {
   name: String!
   command: String!
   args: [String]
-  env: [String]
+  env: String
 }
 
 type RunningMCPServer {
