@@ -4,7 +4,7 @@ import logger from "../common/logger.js";
 
 async function main() {
   const transport = new StdioClientTransport({
-    command: "yarn npx", // Use the command from servers
+    command: "npx", // Use the command from servers
     args: ["-y", "@tokenizin/mcp-npx-fetch"], // Use the args from servers
     env: {}, // Use the env from servers, default to empty object
   });
