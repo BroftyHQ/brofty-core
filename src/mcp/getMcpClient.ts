@@ -40,6 +40,7 @@ export default async function getMcpClient({
       command: server.dataValues.command, // Use the command from servers
       args: server.dataValues.args, // Use the args from servers
       env: server.dataValues.envs || {}, // Use the env from servers, default to empty object
+      stderr: "inherit", // Inherit stderr to see errors in console
     });
 
     transport.onerror = (error: Error) => {
