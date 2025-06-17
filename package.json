@@ -5,7 +5,7 @@
   "main": "electron/app.js",
   "scripts": {
     "clean": "rimraf electron/server",
-    "compile": "tsc --outDir electron/server",
+    "compile": "tsc --outDir electron/server ",
     "dev": "yarn tsx watch src/index.ts",
     "dev-static": "yarn tsx src/index.ts",
     "app:dev": "electron electron/app.js",
@@ -13,7 +13,7 @@
     "app:build-linux": "tsx src/electron-build/linux.ts",
     "app:build-mac": "tsx src/electron-build/mac.ts",
     "app:build-dir": "electron-builder --dir",
-    "start": "tsx ./electron/server/index.js"
+    "start": "cross-env NODE_ENV=production tsx ./electron/server/index.js"
   },
   "repository": {
     "type": "git",
@@ -53,6 +53,7 @@
   "devDependencies": {
     "@types/luxon": "^3.6.2",
     "@types/node": "^22.15.30",
+    "cross-env": "^7.0.3",
     "electron": "^36.4.0",
     "electron-builder": "^26.0.12",
     "rimraf": "^6.0.1",
