@@ -44,5 +44,11 @@ type Tool {
   description: String!
   mcp_server: String
 }
+
+type SystemLog {
+  type: String!
+  message: String!
+  timestamp: String!
+}
 `;
 export default types;

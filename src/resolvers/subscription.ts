@@ -27,4 +27,16 @@ export const Subscription = {
       ]);
     }),
   },
+  systemLogs: {
+    subscribe: withAuth(async (
+      parent,
+      args,
+      context: AuthorizedGraphQLContext,
+      info
+    ) => {
+      return pubsub.asyncIterableIterator([
+        `SYSTEM_LOGS`,
+      ]);
+    }),
+  },
 };
