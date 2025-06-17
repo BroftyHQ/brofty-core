@@ -4,11 +4,10 @@ import logger from "../common/logger.js";
 
 async function main() {
   const transport = new StdioClientTransport({
-    command: "/root/.nvm/versions/node/v22.16.0/bin/npx", // Use the full path to npx
+    command: "npx", // Use system npx from PATH
     args: ["-y", "@tokenizin/mcp-npx-fetch"],
     env: {
-      ...process.env,
-      PATH: `${process.env.PATH}:/root/.nvm/versions/node/v22.16.0/bin`,
+      ...process.env
     },
   });
   const client = new Client({
