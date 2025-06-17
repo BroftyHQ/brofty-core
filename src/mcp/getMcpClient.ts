@@ -34,17 +34,23 @@ export default async function getMcpClient({
       args: server.dataValues.args,
       env: server.dataValues.envs || {},
     });
-    
+
+    const env = server.dataValues.envs || {};
     // Pass command and args separately to avoid accidental backslash issues
     transport = new StdioClientTransport({
       command: server.dataValues.command, // Use the command from servers
       args: server.dataValues.args, // Use the args from servers
-      env: server.dataValues.envs || {}, // Use the env from servers, default to empty object
+      env: {
+        ...process.env, // Use the env from servers, default to empty object
+        ...env, // Merge with server-specific environment variables
+      },
     });
 
     transport.onerror = (error: Error) => {
       logger.error(
-        `Transport error for MCP client '${name}': ${error instanceof Error ? error.message : String(error)}`
+        `Transport error for MCP client '${name}': ${
+          error instanceof Error ? error.message : String(error)
+        }`
       );
     };
 
@@ -60,12 +66,14 @@ export default async function getMcpClient({
       name: "brofty", // A name for your client
       version: "1.0.0", // A version for your client
     });
-    
+
     try {
       await client.connect(transport); // Set the transport for the client
     } catch (error) {
       logger.error(
-        `Failed to connect MCP client '${name}': ${error instanceof Error ? error.message : String(error)}`
+        `Failed to connect MCP client '${name}': ${
+          error instanceof Error ? error.message : String(error)
+        }`
       );
     }
     // Cache the client instance and transport
