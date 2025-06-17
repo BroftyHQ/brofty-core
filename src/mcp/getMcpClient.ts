@@ -42,6 +42,19 @@ export default async function getMcpClient({
       env: server.dataValues.envs || {}, // Use the env from servers, default to empty object
     });
 
+    transport.onerror = (error: Error) => {
+      logger.error(
+        `Transport error for MCP client '${name}': ${error instanceof Error ? error.message : String(error)}`
+      );
+    };
+
+    transport.onclose = () => {
+      logger.info(`Transport for MCP client '${name}' closed.`);
+      // Cleanup caches on transport close
+      clientCache.delete(name);
+      clientInitTimes.delete(name);
+      clientTransports.delete(name);
+    };
 
     client = new Client({
       name: "brofty", // A name for your client
