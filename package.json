@@ -8,6 +8,7 @@
     "compile": "tsc --outDir electron/server ",
     "dev": "yarn tsx watch src/index.ts",
     "dev-static": "yarn tsx src/index.ts",
+    "dev-prod": "cross-env NODE_ENV=production yarn tsx watch src/index.ts",
     "app:dev": "electron electron/app.js",
     "app:build-win": "tsx src/electron-build/win.ts",
     "app:build-linux": "tsx src/electron-build/linux.ts",
