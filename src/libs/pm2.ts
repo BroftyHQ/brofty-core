@@ -4,6 +4,13 @@ import logger from "../common/logger.js";
 import pubsub from "../pubsub/index.js";
 import { DateTime } from "luxon";
 
+// In-memory cache for last 25 logs
+const logCache: Array<{ type: string; message: string; timestamp: string }> = [];
+
+export function getLastLogs() {
+  return [...logCache];
+}
+
 export default async function start_pm2_manager() {
   if (!IS_PRODUCTION) {
     logger.info(`Log streaming is disabled in non-production mode.`);
@@ -34,14 +41,15 @@ export default async function start_pm2_manager() {
         // If JSON parsing fails, we assume packet.data is a string
         message = packet.data;
       }
-
-      pubsub.publish("SYSTEM_LOGS", {
-        systemLogs: {
-          type,
-          message,
-          timestamp: DateTime.now().toMillis().toString(),
-        },
-      });
+      const logEntry = {
+        type,
+        message,
+        timestamp: DateTime.now().toMillis().toString(),
+      };
+      // Add to cache and maintain max 25 logs
+      logCache.push(logEntry);
+      if (logCache.length > 25) logCache.shift();
+      pubsub.publish("SYSTEM_LOGS", { systemLogs: logEntry });
     });
 
     bus.on("log:err", (packet) => {
@@ -55,14 +63,15 @@ export default async function start_pm2_manager() {
         // If JSON parsing fails, we assume packet.data is a string
         message = packet.data;
       }
-
-      pubsub.publish("SYSTEM_LOGS", {
-        systemLogs: {
-          type,
-          message,
-          timestamp: DateTime.now().toMillis().toString(),
-        },
-      });
+      const logEntry = {
+        type,
+        message,
+        timestamp: DateTime.now().toMillis().toString(),
+      };
+      // Add to cache and maintain max 25 logs
+      logCache.push(logEntry);
+      if (logCache.length > 25) logCache.shift();
+      pubsub.publish("SYSTEM_LOGS", { systemLogs: logEntry });
     });
   });
 }
