@@ -9,7 +9,7 @@ export default async function user_initialization(): Promise<void> {
   const is_initialized = await getPreference("is_initialized");
   if (is_initialized) {
     // User is already initialized, no action needed
-    logger.info("User is already initialized, skipping initialization.");
+    // logger.info("User is already initialized, skipping initialization.");
     return;
   }
   // set initialization flag as current timestamp

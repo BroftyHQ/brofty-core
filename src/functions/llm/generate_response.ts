@@ -50,6 +50,9 @@ export default async function generate_response({
       },
       { where: { id } }
     );
+    logger.warn(
+      `Recursion limit exceeded for message ID ${id}. Skipping further processing.`
+    );
     return;
   }
   recursion_count++;
@@ -173,14 +176,16 @@ export default async function generate_response({
         } else if (Object.keys(function_cache).length > 0) {
           for await (const function_call of Object.values(function_cache)) {
             const { name, arguments: args } = function_call;
-            logger.info(
-              `Function call detected: ${name} with arguments: ${args} - Recursion count: ${recursion_count}`
-            );
 
             const functionCallId = function_call.tool_call_id;
             const functionName = name;
             const function_scope = functionName.split("___")[0];
             const scopedFunctionName = functionName.split("___")[1];
+
+            logger.info(
+              `Function call detected: ${scopedFunctionName} with arguments: ${args} - Recursion count: ${recursion_count}`
+            );
+
             pubsub.publish(`MESSAGE_STREAM`, {
               messageStream: {
                 type: "APPEND_MESSAGE",
@@ -264,7 +269,9 @@ export default async function generate_response({
       }
     } else {
       logger.error(
-        `Unhandled event type: ${event.object} - Event: ${JSON.stringify(event)}`
+        `Unhandled event type: ${event.object} - Event: ${JSON.stringify(
+          event
+        )}`
       );
     }
   }
