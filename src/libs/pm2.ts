@@ -10,7 +10,7 @@ export default async function start_pm2_manager() {
     return;
   }
   // only connect to pm2 global god instance not launch daemon
-  pm2.connect(true,(err) => {
+  pm2.connect(true, (err) => {
     if (err) {
       console.error("PM2 connect error:", err);
       process.exit(1);
@@ -24,22 +24,38 @@ export default async function start_pm2_manager() {
     }
 
     bus.on("log:out", (packet) => {
-      const msg = `[OUT] ${packet.process.name}: ${packet.data}`;
+      const log_object =
+        typeof packet.data === "string"
+          ? {
+              type: "out",
+              message: packet.data,
+            }
+          : {
+              type: packet.level || "out",
+              ...packet.data,
+            };
       pubsub.publish("SYSTEM_LOGS", {
         systemLogs: {
-          type: "out",
-          message: msg,
+          ...log_object,
           timestamp: DateTime.now().toMillis().toString(),
         },
       });
     });
 
     bus.on("log:err", (packet) => {
-      const msg = `[ERR] ${packet.process.name}: ${packet.data}`;
+      const log_object =
+        typeof packet.data === "string"
+          ? {
+              type: "err",
+              message: packet.data,
+            }
+          : {
+              type: packet.level || "err",
+              ...packet.data,
+            };
       pubsub.publish("SYSTEM_LOGS", {
         systemLogs: {
-          type: "err",
-          message: msg,
+          ...log_object,
           timestamp: DateTime.now().toMillis().toString(),
         },
       });
