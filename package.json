@@ -44,6 +44,7 @@
     "nanoid": "^5.1.5",
     "node-llama-cpp": "^3.9.0",
     "openai": "^5.1.1",
+    "pm2": "^6.0.8",
     "sequelize": "^6.37.7",
     "sqlite3": "^5.1.7",
     "systeminformation": "^5.27.1",

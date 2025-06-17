@@ -19,6 +19,8 @@ import start_streaming_system_status from "./functions/system/start_streaming_sy
 import { start_memory_server } from "./db/qdrant/start_memory_server.js";
 import check_docker from "./common/check_docker.js";
 import user_initialization from "./functions/user_initialization.js";
+import start_pm2_manager from "./libs/pm2.js";
+import logger from "./common/logger.js";
 
 interface MyContext {
   token?: string;
@@ -137,6 +139,12 @@ export default async function start_core_server() {
       } mode`,
     });
   });
+    app.get("/logtest", corsConfig, (req, res) => {
+      logger.info("Log test endpoint hit");
+    res.status(200).json({
+      status: "ok",
+    });
+  });
 
   // Set up our Express middleware to handle CORS, body parsing,
   // and our expressMiddleware function.
@@ -164,6 +172,7 @@ export default async function start_core_server() {
     sequelize.sync({ alter: true, logging: false }).then(() => {
       console.log("✅ Database synced successfully");
       user_initialization();
+      start_pm2_manager();
     });
   });
   console.log(`🚀 Brofty Core Server ready`);
