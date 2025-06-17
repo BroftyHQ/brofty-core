@@ -32,7 +32,7 @@ export default async function start_pm2_manager() {
             }
           : {
               type: packet.level || "out",
-              ...packet.data,
+              message: packet.data.message || "",
             };
       pubsub.publish("SYSTEM_LOGS", {
         systemLogs: {
@@ -51,7 +51,7 @@ export default async function start_pm2_manager() {
             }
           : {
               type: packet.level || "err",
-              ...packet.data,
+              message: packet.data.message || "",
             };
       pubsub.publish("SYSTEM_LOGS", {
         systemLogs: {
