@@ -19,10 +19,13 @@ export default async function start_pm2_manager() {
 
     bus.on("log:out", (packet) => {
       const msg = `[OUT] ${packet.process.name}: ${packet.data}`;
+      console.log(msg);
+      
     });
 
     bus.on("log:err", (packet) => {
       const msg = `[ERR] ${packet.process.name}: ${packet.data}`;
+        console.error(msg);
     });
   });
 }
