@@ -24,38 +24,42 @@ export default async function start_pm2_manager() {
     }
 
     bus.on("log:out", (packet) => {
-      const log_object =
-        typeof packet.data === "string"
-          ? {
-              type: "out",
-              message: packet.data,
-            }
-          : {
-              type: packet.level || "out",
-              message: packet.data.message || "",
-            };
+      let type = "out";
+      let message = "";
+      try {
+        const data = JSON.parse(packet.data);
+        message = data.message || "";
+        type = data.level || "out";
+      } catch (error) {
+        // If JSON parsing fails, we assume packet.data is a string
+        message = packet.data;
+      }
+
       pubsub.publish("SYSTEM_LOGS", {
         systemLogs: {
-          ...log_object,
+          type,
+          message,
           timestamp: DateTime.now().toMillis().toString(),
         },
       });
     });
 
     bus.on("log:err", (packet) => {
-      const log_object =
-        typeof packet.data === "string"
-          ? {
-              type: "err",
-              message: packet.data,
-            }
-          : {
-              type: packet.level || "err",
-              message: packet.data.message || "",
-            };
+      let type = "err";
+      let message = "";
+      try {
+        const data = JSON.parse(packet.data);
+        message = data.message || "";
+        type = data.level || "err";
+      } catch (error) {
+        // If JSON parsing fails, we assume packet.data is a string
+        message = packet.data;
+      }
+
       pubsub.publish("SYSTEM_LOGS", {
         systemLogs: {
-          ...log_object,
+          type,
+          message,
           timestamp: DateTime.now().toMillis().toString(),
         },
       });
