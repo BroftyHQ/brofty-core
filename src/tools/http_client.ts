@@ -15,8 +15,6 @@ async function http_client({
   body,
   timeout = 10000,
 }: HttpClientParams) {
-  console.log(`Calling HTTP endpoint ${url}`);
-
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);

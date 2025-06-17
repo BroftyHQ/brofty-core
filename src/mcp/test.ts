@@ -22,7 +22,7 @@ async function main() {
       );
     }
 
-    console.log(await client.listTools());
+    logger.info(await client.listTools());
     await client.close();
 }
 

@@ -29,12 +29,6 @@ export default async function getMcpClient({
     if (!server) {
       throw new Error(`Server with name "${name}" not found in servers`);
     }
-    console.log({
-      command: server.dataValues.command,
-      args: server.dataValues.args,
-      env: server.dataValues.envs || {},
-    });
-
     const env = server.dataValues.envs || {};
     // Pass command and args separately to avoid accidental backslash issues
     transport = new StdioClientTransport({

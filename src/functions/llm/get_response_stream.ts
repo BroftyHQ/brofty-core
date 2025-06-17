@@ -32,7 +32,6 @@ export default async function get_response_stream({
       stream: true,
     });
   } catch (error) {
-    // console.log("Error getting response stream:", error);
     logger.error(`Error getting response: ${error.message}`);
 
     // addd it to ai response stream

@@ -16,7 +16,6 @@ async function getOpenAIClient(token: string): Promise<OpenAI> {
     const host = IS_PRODUCTION
         ? "https://backend.brofty.com/rest/v1/openai-proxy"
         : "http://localhost:1337/rest/v1/openai-proxy";
-    logger.info(`Initializing OpenAI client with host: ${host}`);
     cachedClient = new OpenAI({
       baseURL: host,
       apiKey: token,

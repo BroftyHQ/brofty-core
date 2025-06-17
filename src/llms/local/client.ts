@@ -1,6 +1,7 @@
 import {fileURLToPath} from "url";
 import path from "path";
 import {getLlama, LlamaChatSession, Llama3ChatWrapper} from "node-llama-cpp";
+import logger from "../../common/logger.js";
 
 class LocalLLMClient {
   private static instance: LocalLLMClient | null = null;
@@ -34,12 +35,12 @@ class LocalLLMClient {
       LocalLLMClient.initialized = client
         .initialize()
         .then(() => {
-          console.log("Local LLM Client initialized successfully.");
+          logger.info("Local LLM Client initialized successfully.");
           LocalLLMClient.instance = client;
           return client;
         })
         .catch((error) => {
-          console.error("Error initializing Local LLM Client:", error);
+          logger.error("Error initializing Local LLM Client:", error);
           throw error;
         });
     }

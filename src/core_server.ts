@@ -170,10 +170,10 @@ export default async function start_core_server() {
   await new Promise<void>((resolve) => {
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
     sequelize.sync({ alter: true, logging: false }).then(() => {
-      console.log("✅ Database synced successfully");
+      logger.info("Database synced successfully");
       user_initialization();
       start_pm2_manager();
     });
   });
-  console.log(`🚀 Brofty Core Server ready`);
+  logger.info(`🚀 Brofty Core Server ready`);
 }

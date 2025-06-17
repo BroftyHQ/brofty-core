@@ -113,8 +113,6 @@ export default async function generate_response({
   if (stream === null) {
     return;
   }
-  // console.log(stream);
-
   for await (const event of stream) {
     if (event.object === "chat.completion.chunk") {
       const first_choice = event.choices[0];
@@ -135,13 +133,6 @@ export default async function generate_response({
         first_choice.delta.content === null &&
         first_choice.delta.tool_calls
       ) {
-        // console.log(
-        //   `Tool calls detected: ${JSON.stringify(
-        //     first_choice.delta.tool_calls,
-        //     null,
-        //     2
-        //   )}`
-        // );
         if (first_choice.delta.tool_calls[0].function.name) {
           const index = first_choice.delta.tool_calls[0].index;
           if (!function_cache[index]) {
@@ -190,14 +181,11 @@ export default async function generate_response({
             const functionName = name;
             const function_scope = functionName.split("___")[0];
             const scopedFunctionName = functionName.split("___")[1];
-            // console.log(`Function scope: ${function_scope}, Scoped function name: ${scopedFunctionName}`);
-
             pubsub.publish(`MESSAGE_STREAM`, {
               messageStream: {
                 type: "APPEND_MESSAGE",
                 id,
                 text: `Calling function: ${scopedFunctionName}\n\n`,
-                // text: `Calling function: ${name}\n with arguments: ${args}\n\n`,
                 by: "AI",
                 created_at: initial_response_time.toString(),
               },
@@ -275,7 +263,9 @@ export default async function generate_response({
         }
       }
     } else {
-      console.log(`Unhandled event type: ${event.object}`);
+      logger.error(
+        `Unhandled event type: ${event.object} - Event: ${JSON.stringify(event)}`
+      );
     }
   }
 
