@@ -1,6 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { mcp_server_model } from "../db/sqlite/models.js";
+import logger from "../common/logger.js";
 
 // Module-level cache for clients
 const clientCache: Map<string, Client> = new Map();
@@ -46,7 +47,14 @@ export default async function getMcpClient({
       name: "brofty", // A name for your client
       version: "1.0.0", // A version for your client
     });
-    await client.connect(transport); // Set the transport for the client
+    
+    try {
+      await client.connect(transport); // Set the transport for the client
+    } catch (error) {
+      logger.error(
+        `Failed to connect MCP client '${name}': ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
     // Cache the client instance and transport
     clientCache.set(name, client);
     clientInitTimes.set(name, Date.now()); // Track when the client was initialized
