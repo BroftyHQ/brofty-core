@@ -69,6 +69,11 @@ export default async function getMcpClient({
           error instanceof Error ? error.message : String(error)
         }`
       );
+      throw new Error(
+        `Failed to connect MCP client '${name}': ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
     }
     // Cache the client instance and transport
     clientCache.set(name, client);
