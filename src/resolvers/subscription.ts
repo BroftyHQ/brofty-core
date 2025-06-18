@@ -1,7 +1,7 @@
+import { getLastLogs } from "../common/logger.js";
 import pubsub from "../pubsub/index.js";
 import { AuthorizedGraphQLContext } from "../types/context.js";
 import { withAuth } from "./withAuth.js";
-import { getLastLogs } from "../libs/pm2.js";
 
 export const Subscription = {
   messageStream: {

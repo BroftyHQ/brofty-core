@@ -19,7 +19,6 @@ import start_streaming_system_status from "./functions/system/start_streaming_sy
 import { start_memory_server } from "./db/qdrant/start_memory_server.js";
 import check_docker from "./common/check_docker.js";
 import user_initialization from "./functions/user_initialization.js";
-import start_pm2_manager from "./libs/pm2.js";
 import logger from "./common/logger.js";
 
 interface MyContext {
@@ -172,7 +171,6 @@ export default async function start_core_server() {
     sequelize.sync({ alter: true, logging: false }).then(() => {
       logger.info("Database synced successfully");
       user_initialization();
-      start_pm2_manager();
     });
   });
   logger.info(`🚀 Brofty Core Server ready`);
