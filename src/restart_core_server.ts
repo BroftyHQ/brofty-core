@@ -34,16 +34,15 @@ async function restartPM2Process(processName: string): Promise<void> {
       if (err) {
         reject(new Error(`Failed to connect to PM2: ${err.message}`));
         return;
-      }
-
-      // Start the process from ecosystem.config.cjs with production environment
+      } // Start the process from ecosystem.config.cjs with production environment
       const configPath = path.join(PROJECT_ROOT, "ecosystem.config.cjs");
+      //@ts-ignore
       pm2.start(
         configPath,
         {
-          env: { NODE_ENV: "production" },
+          env: "production",
           name: processName,
-          force: true,
+          force: true, // Force restart the process
         },
         (startErr) => {
           pm2.disconnect();
