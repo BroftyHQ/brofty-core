@@ -170,13 +170,7 @@ async function start_core_server() {
         return await get_ctx_with_auth_token(token);
       },
     })  );  
-  
-  // Wait 5 seconds before starting HTTP server in production to allow previous instance to release port
-  if (IS_PRODUCTION) {
-    logger.info("Production mode: Waiting 5 seconds before starting HTTP server...");
-    await new Promise(resolve => setTimeout(resolve, 5000));
-  }
-  
+
   // Modified server startup
   await new Promise<void>((resolve) => {
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
