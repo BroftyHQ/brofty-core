@@ -94,6 +94,7 @@ async function compileProject(): Promise<boolean> {
 }
 
 export default async function check_update() {
+  logger.info("Checking for new updates");
   const CURRENT_HASH = await getCurrentCommitHash();
   const REMOTE_HASH = await getRemoteCommitHash();
   logger.info(`Current commit hash: ${CURRENT_HASH}`);
@@ -131,7 +132,5 @@ export default async function check_update() {
       return false;
     }
   }
-
-  logger.info("Already up to date");
   return false;
 }
