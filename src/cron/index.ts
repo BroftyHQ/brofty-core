@@ -15,7 +15,7 @@ export default async function start_cron() {
   });
 
   update_jobs.start();
-  logger.info("Starting cron jobs");
+  logger.info("Starting cron jobs 1.0");
   
   return [update_jobs];
 }
