@@ -52,11 +52,14 @@ async function updateProject(): Promise<boolean> {
       logger.warn("Git pull warnings:", gitResult.stderr);
     }    // Method 2: Using traditional syntax with options
     logger.info("Installing dependencies...");
-    const yarnInstallResult = await execa('yarn', ['install'], {
+    const yarnInstallResult = await execa('yarn', ['install', '--production=false'], {
       cwd: PROJECT_ROOT,
-      stdio: 'inherit' // This will show real-time output
+      stdio: 'pipe' // Capture output for logging
     });
     logger.info("Yarn install completed");
+    if (yarnInstallResult.stdout) {
+      logger.info("Yarn install output:", yarnInstallResult.stdout);
+    }
     if (yarnInstallResult.stderr) {
       logger.warn("Yarn install warnings:", yarnInstallResult.stderr);
     }
@@ -70,25 +73,49 @@ async function updateProject(): Promise<boolean> {
 
 async function compileProject(): Promise<boolean> {
   try {
-    logger.info("Starting compilation in separate terminal session...");
+    logger.info("Starting compilation...");
     
-    // Start compilation in a detached process (independent terminal session)
-    const compileProcess = execa('yarn', ['compile'], {
+    // First, ensure TypeScript and type definitions are available
+    logger.info("Verifying TypeScript setup...");
+    try {
+      const tscCheckResult = await execa('yarn', ['tsc', '--version'], {
+        cwd: PROJECT_ROOT,
+        stdio: 'pipe'
+      });
+      logger.info("TypeScript version:", tscCheckResult.stdout);
+    } catch (tscError) {
+      logger.warn("TypeScript check failed, attempting to install:", tscError.message);
+      // Try to install TypeScript locally if it's missing
+      await execa('yarn', ['add', '-D', 'typescript', '@types/node'], {
+        cwd: PROJECT_ROOT,
+        stdio: 'pipe'
+      });
+    }
+    
+    // Run compilation and wait for it to complete
+    const compileResult = await execa('yarn', ['compile'], {
       cwd: PROJECT_ROOT,
-      detached: true,   // Run independently from parent process
-      stdio: 'ignore',   // Don't inherit stdio (runs in background)
-      windowsHide: true  // On Windows, hide the terminal window
+      stdio: 'pipe', // Capture output for logging
+      timeout: 300000 // 5 minute timeout
     });
 
-    // Detach the process so it runs independently
-    compileProcess.unref();
-
-    logger.info("Compilation started in separate terminal session");
-    logger.info(`Compilation process PID: ${compileProcess.pid}`);
+    logger.info("Compilation completed successfully");
+    if (compileResult.stdout) {
+      logger.info("Compile output:", compileResult.stdout);
+    }
+    if (compileResult.stderr) {
+      logger.warn("Compile warnings:", compileResult.stderr);
+    }
     
     return true;
   } catch (error) {
-    logger.error("Failed to start compilation process:", error);
+    logger.error("Failed to compile project:", error);
+    if (error.stdout) {
+      logger.error("Compile stdout:", error.stdout);
+    }
+    if (error.stderr) {
+      logger.error("Compile stderr:", error.stderr);
+    }
     return false;
   }
 }
