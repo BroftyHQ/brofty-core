@@ -20,6 +20,7 @@ import { start_memory_server } from "./db/qdrant/start_memory_server.js";
 import check_docker from "./common/check_docker.js";
 import user_initialization from "./functions/user_initialization.js";
 import logger from "./common/logger.js";
+import { getCurrentCommitHash } from "./libs/github.js";
 
 interface MyContext {
   token?: string;
@@ -138,10 +139,11 @@ export default async function start_core_server() {
       } mode`,
     });
   });
-    app.get("/logtest", corsConfig, (req, res) => {
-      logger.info("Log test endpoint hit");
+    app.get("/test", corsConfig, (req, res) => {
+      
     res.status(200).json({
       status: "ok",
+      message: getCurrentCommitHash(),
     });
   });
 
