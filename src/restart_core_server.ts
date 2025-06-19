@@ -35,6 +35,16 @@ async function restartPM2Process(processName: string): Promise<void> {
         reject(new Error(`Failed to connect to PM2: ${err.message}`));
         return;
       } // Start the process from ecosystem.config.cjs with production environment
+
+      // remove the existing process if it exists
+      pm2.delete(processName, (deleteErr) => {
+        if (deleteErr) {
+          pm2.disconnect();
+          reject(new Error(`Failed to delete existing process: ${deleteErr.message}`));
+          return;
+        }
+      });
+
       const configPath = path.join(PROJECT_ROOT, "ecosystem.config.cjs");
       //@ts-ignore
       pm2.start(
