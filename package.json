@@ -22,8 +22,9 @@
     "pm2:status": "pm2 status",
 
     "compile": "tsc --outDir electron/server ",
-    "dev": "yarn tsx watch src/index.ts",
-    "start": "pm2 start ecosystem.config.cjs --env production --name brofty-core -f"
+    
+    "dev": "docker -v && yarn tsx watch src/index.ts",
+    "start": "docker -v && pm2 start ecosystem.config.cjs --env production --name brofty-core -f"
   },
   "repository": {
     "type": "git",
