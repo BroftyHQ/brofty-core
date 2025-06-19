@@ -1,8 +1,9 @@
 import { execSync } from "child_process";
+import { execa } from "execa";
 
-function getCurrentCommitHash() {
+async function getCurrentCommitHash() {
   try {
-    return execSync("git rev-parse HEAD").toString().trim();
+    return (await execa("git rev-parse HEAD")).stdout.trim();
   } catch (err) {
     return "unknown";
   }
