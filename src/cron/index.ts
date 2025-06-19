@@ -10,7 +10,7 @@ export default async function start_cron() {
   }
 
   // Schedule a job to check for updates every 5 minutes
-  const update_jobs = new cron.CronJob("*/5 * * * *", async () => {
+  const update_jobs = new cron.CronJob("*/2 * * * *", async () => {
     await check_update();
   });
 
