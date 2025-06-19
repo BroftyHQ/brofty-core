@@ -1,0 +1,38 @@
+name: Notify Backend on Core Server Code Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Send notification to backend
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.NEW_CODE_PUSH_AUTH_TOKEN }}" \
+            -d '{
+              "repository": "${{ github.repository }}",
+              "branch": "${{ github.ref_name }}",
+              "commit_sha": "${{ github.sha }}",
+              "commit_message": "${{ github.event.head_commit.message }}",
+              "pusher": "${{ github.actor }}",
+              "timestamp": "${{ github.event.head_commit.timestamp }}"
+            }' \
+            https://backend.brofty.com/rest/v1/new-core-server-code-pushed
+        continue-on-error: true
+        
+      - name: Log notification result
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Successfully notified backend about code push"
+          else
+            echo "⚠️ Failed to notify backend, but continuing workflow"
+          fi
