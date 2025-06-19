@@ -77,7 +77,7 @@ async function compileProject(): Promise<boolean> {
       cwd: PROJECT_ROOT,
       detached: true,   // Run independently from parent process
       stdio: 'ignore',   // Don't inherit stdio (runs in background)
-      windowsHide: false // On Windows, show the terminal window
+      windowsHide: true  // On Windows, hide the terminal window
     });
 
     // Detach the process so it runs independently
