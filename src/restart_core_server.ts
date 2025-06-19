@@ -25,7 +25,7 @@ export default async function restart_core_server() {
 }
 
 /**
- * Restart a PM2 process by removing existing script and starting a new one
+ * Restart a PM2 process by forcing it to start again.
  * @param processName - Name of the PM2 process to restart
  */
 async function restartPM2Process(processName: string): Promise<void> {
@@ -36,29 +36,28 @@ async function restartPM2Process(processName: string): Promise<void> {
         return;
       }
 
-      // First, delete the existing process
-      pm2.delete(processName, (deleteErr) => {
-        if (deleteErr) {
-          // If delete fails because process doesn't exist, that's okay
-          console.warn(`Process ${processName} may not exist or already deleted:`, deleteErr.message);        }
-        
-        // Start the process from ecosystem.config.cjs with production environment
-        const configPath = path.join(PROJECT_ROOT, "ecosystem.config.cjs");
-        pm2.start(configPath, {
+      // Start the process from ecosystem.config.cjs with production environment
+      const configPath = path.join(PROJECT_ROOT, "ecosystem.config.cjs");
+      pm2.start(
+        configPath,
+        {
           env: { NODE_ENV: "production" },
           name: processName,
-          force: true
-        }, (startErr) => {
+          force: true,
+        },
+        (startErr) => {
           pm2.disconnect();
 
           if (startErr) {
-            reject(new Error(`Failed to start ${processName}: ${startErr.message}`));
+            reject(
+              new Error(`Failed to start ${processName}: ${startErr.message}`)
+            );
             return;
           }
 
           resolve();
-        });
-      });
+        }
+      );
     });
   });
 }
