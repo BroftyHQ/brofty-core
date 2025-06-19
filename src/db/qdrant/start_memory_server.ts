@@ -51,25 +51,50 @@ export async function start_memory_server() {
             });
         });
     });
+}
 
-
+export async function stop_memory_server(): Promise<void> {
+    const { exec } = await import("child_process");
+    const containerName = "brofty-qdrant";
     
-    // Optionally, restart container if process restarts (handled by always starting fresh with same name)
-
-    const stopContainer = () => {
-        exec(`docker stop ${containerName} && docker rm ${containerName}`, (err, so, se) => {
-            if (err) {
-                logger.error(`Error stopping/removing Qdrant container: ${err.message}`);
-            } else {
-                logger.info(`Qdrant container stopped and removed.`);
+    return new Promise((resolve, reject) => {
+        logger.info("Stopping Qdrant memory server...");
+        
+        // First, check if the container exists and is running
+        exec(`docker ps --filter "name=${containerName}" --filter "status=running" -q`, (checkErr, checkStdout) => {
+            if (checkErr) {
+                logger.error(`Error checking Qdrant container status: ${checkErr.message}`);
+                reject(checkErr);
+                return;
             }
+            
+            if (!checkStdout || checkStdout.trim().length === 0) {
+                logger.info(`Qdrant container '${containerName}' is not running. Nothing to stop.`);
+                resolve();
+                return;
+            }
+            
+            // Stop and remove the container
+            exec(`docker stop ${containerName} && docker rm ${containerName}`, (err, stdout, stderr) => {
+                if (err) {
+                    // Check if the error is because container doesn't exist
+                    if (err.message.includes('No such container')) {
+                        logger.info(`Qdrant container '${containerName}' does not exist. Already cleaned up.`);
+                        resolve();
+                        return;
+                    }
+                    logger.error(`Error stopping/removing Qdrant container: ${err.message}`);
+                    reject(err);
+                    return;
+                }
+                
+                if (stderr) {
+                    logger.warn(`Qdrant stop stderr: ${stderr}`);
+                }
+                
+                logger.info(`Qdrant container '${containerName}' stopped and removed successfully.`);
+                resolve();
+            });
         });
-    };
-
-    // Attach exit handlers every time (Node will deduplicate listeners for the same function)
-    process.on('exit', stopContainer);
-    process.on('SIGINT', () => { stopContainer(); process.exit(0); });
-    process.on('SIGTERM', () => { stopContainer(); process.exit(0); });
-    process.on('SIGHUP', () => { stopContainer(); process.exit(0); });
-    process.on('uncaughtException', (err) => { logger.error(err); stopContainer(); process.exit(1); });
+    });
 }

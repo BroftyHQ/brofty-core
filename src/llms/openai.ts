@@ -1,6 +1,5 @@
 import OpenAI from "openai";
-import { IS_PRODUCTION } from "../common/constants.js";
-import logger from "../common/logger.js";
+import { BACKEND_URL } from "../common/constants.js";
 
 let cachedClient: OpenAI | undefined;
 let lastInitTime: number | undefined;
@@ -13,9 +12,7 @@ async function getOpenAIClient(token: string): Promise<OpenAI> {
     !lastInitTime ||
     now - lastInitTime > CLIENT_INVALIDATE_INTERVAL
   ) {
-    const host = IS_PRODUCTION
-        ? "https://backend.brofty.com/rest/v1/openai-proxy"
-        : "http://localhost:1337/rest/v1/openai-proxy";
+    const host = `${BACKEND_URL}/rest/v1/openai-proxy`;
     cachedClient = new OpenAI({
       baseURL: host,
       apiKey: token,
