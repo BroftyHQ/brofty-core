@@ -20,8 +20,11 @@ async function getRemoteCommitHash(): Promise<string | null> {
     );
 
     if (response.ok) {
-      const data = (await response.json()) as { lastest_commit?: string };
-      return data.lastest_commit || null;
+      const data = (await response.json()) as {
+        latest_commit?: string;
+        cached?: boolean;
+      };
+      return data.latest_commit || null;
     }
 
     logger.error(
@@ -78,6 +81,7 @@ async function updateProject(): Promise<boolean> {
 export default async function check_update() {
   const CURRENT_HASH = getCurrentCommitHash();
   const REMOTE_HASH = await getRemoteCommitHash();
+  logger.info(`Current commit hash: ${REMOTE_HASH}`);
 
   if (!REMOTE_HASH) {
     logger.error("Could not fetch remote commit hash");
