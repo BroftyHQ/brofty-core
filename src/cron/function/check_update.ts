@@ -94,7 +94,7 @@ async function compileProject(): Promise<boolean> {
 }
 
 export default async function check_update() {
-  logger.info("Checking for core server updates...");
+  logger.info("Checking for brofty core server updates...");
   const CURRENT_HASH = await getCurrentCommitHash();
   const REMOTE_HASH = await getRemoteCommitHash();
   logger.info(`Current commit hash: ${CURRENT_HASH}`);
