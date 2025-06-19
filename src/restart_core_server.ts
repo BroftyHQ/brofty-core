@@ -1,6 +1,9 @@
 import { IS_PRODUCTION } from "./common/constants.js";
 import logger from "./common/logger.js";
 import pm2 from "pm2";
+import path from "path";
+
+const PROJECT_ROOT = path.resolve(process.cwd());
 
 export default async function restart_core_server() {
   // code is already fetched and compiled
@@ -22,7 +25,7 @@ export default async function restart_core_server() {
 }
 
 /**
- * Restart a PM2 process using the pm2 npm package
+ * Restart a PM2 process by removing existing script and starting a new one
  * @param processName - Name of the PM2 process to restart
  */
 async function restartPM2Process(processName: string): Promise<void> {
@@ -33,15 +36,28 @@ async function restartPM2Process(processName: string): Promise<void> {
         return;
       }
 
-      pm2.restart(processName, (err) => {
-        pm2.disconnect();
+      // First, delete the existing process
+      pm2.delete(processName, (deleteErr) => {
+        if (deleteErr) {
+          // If delete fails because process doesn't exist, that's okay
+          console.warn(`Process ${processName} may not exist or already deleted:`, deleteErr.message);        }
+        
+        // Start the process from ecosystem.config.cjs with production environment
+        const configPath = path.join(PROJECT_ROOT, "ecosystem.config.cjs");
+        pm2.start(configPath, {
+          env: { NODE_ENV: "production" },
+          name: processName,
+          force: true
+        }, (startErr) => {
+          pm2.disconnect();
 
-        if (err) {
-          reject(new Error(`Failed to restart ${processName}: ${err.message}`));
-          return;
-        }
+          if (startErr) {
+            reject(new Error(`Failed to start ${processName}: ${startErr.message}`));
+            return;
+          }
 
-        resolve();
+          resolve();
+        });
       });
     });
   });
