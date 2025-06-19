@@ -39,4 +39,4 @@ To run brofty-core locally:
    yarn start
    ```
 
-Once the server is running, visit [brofty.com](https://www.brofty.com) to use your local core server.
+Once the server is running, visit [brofty.com](https://www.brofty.com) to use your local brofty core server.
