@@ -181,7 +181,7 @@ async function start_core_server() {
       logger.error("Database sync failed:", error);
     });
   });
-  logger.info(`🚀 Brofty Core Server ready`);
+  logger.info(`🚀 Brofty Core Server ready!!!`);
 }
 
 async function stop_core_server(shouldCloseDB: boolean = true) {
