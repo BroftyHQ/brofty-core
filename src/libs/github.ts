@@ -1,9 +1,13 @@
-import { execSync } from "child_process";
+
 import { execa } from "execa";
+import path from "path";
+const PROJECT_ROOT = path.resolve(process.cwd());
 
 async function getCurrentCommitHash() {
   try {
-    return (await execa("git rev-parse HEAD")).stdout.trim();
+    return (await execa("git rev-parse HEAD",{
+      cwd: PROJECT_ROOT
+    })).stdout.trim();
   } catch (err) {
     return "unknown";
   }
