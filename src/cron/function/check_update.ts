@@ -117,8 +117,8 @@ export default async function check_update() {
   // logger.info("Checking for brofty core server updates");
   const CURRENT_HASH = await getCurrentCommitHash();
   const REMOTE_HASH = await getRemoteCommitHash();
-  // logger.info(`Current commit hash: ${CURRENT_HASH}`);
-  // logger.info(`Remote commit hash: ${REMOTE_HASH}`);
+  logger.info(`Current commit hash: ${CURRENT_HASH}`);
+  logger.info(`Remote commit hash: ${REMOTE_HASH}`);
 
   if (!REMOTE_HASH) {
     logger.error("Could not fetch remote commit hash");
