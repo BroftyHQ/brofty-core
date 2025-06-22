@@ -14,7 +14,6 @@ brofty-core is the core engine for Brofty AI, an extensible, local-first AI assi
 - Electron-based server for desktop integration
 - SQLite database for persistent storage
 
-
 ## Getting Started
 To run brofty-core locally:
 
