@@ -12,8 +12,10 @@ export default async function start_cron(): Promise<cron.CronJob[]> {
   // Schedule a job to check for updates every 5 minutes
   const update_jobs = new cron.CronJob(
     "*/5 * * * *",
-    async () => {
-      await check_update();
+    () => {
+      // add await here to ensure the job runs and exits gracefully
+      // not applicable for update check as it is a fire-and-forget operation
+      check_update();
     },
     () => {
       logger.info("Update check job stopped.");
