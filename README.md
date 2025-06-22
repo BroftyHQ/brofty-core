@@ -115,6 +115,7 @@ To completely remove the brofty-core process from PM2:
 yarn pm2:delete
 ```
 
+
 ### Troubleshooting
 
 - **Server won't start**: Ensure Docker is running (`docker -v` should work)
