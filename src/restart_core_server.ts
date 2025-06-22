@@ -3,15 +3,16 @@ import logger from "./common/logger.js";
 import pm2 from "pm2";
 
 export default async function restart_core_server() {
+  logger.info("Restarting brofty-core server...");
   // code is already fetched and compiled
   // now we need to restart dev server or production server or pm2 process
   if (IS_PRODUCTION) {
     // pm2 based production server
     try {
       await restartPM2Process("brofty-core");
-      console.log("Successfully restarted brofty-core via PM2");
+      logger.info("Successfully restarted brofty-core via PM2");
     } catch (error) {
-      console.error("Failed to restart brofty-core via PM2:", error);
+      logger.error("Failed to restart brofty-core via PM2:", error);
       throw error;
     }
 
