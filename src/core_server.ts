@@ -23,6 +23,7 @@ import logger from "./common/logger.js";
 import { getCurrentCommitHash } from "./libs/github.js";
 import start_cron from "./cron/index.js";
 import { safeDatabaseSync } from "./db/sqlite/reconnect.js";
+import { v1Router } from "./rest/index.js";
 
 interface MyContext {
   token?: string;
@@ -133,23 +134,9 @@ async function start_core_server() {
         callback(null, false);
         return;
       }
-    },
-  });
-
-  app.get("/rest/v1/status", corsConfig, (req, res) => {
-    res.status(200).json({
-      status: "ok",
-      message: `Brofty SSR server is running in ${
-        IS_PRODUCTION ? "production" : "development"
-      } mode`,
-    });
-  });
-  app.get("/test", corsConfig, (req, res) => {
-    res.status(200).json({
-      status: "ok",
-      message: getCurrentCommitHash(),
-    });
-  });
+    },  });
+  // Mount REST routes
+  app.use("/rest/v1", corsConfig, v1Router);
 
   // Set up our Express middleware to handle CORS, body parsing,
   // and our expressMiddleware function.
