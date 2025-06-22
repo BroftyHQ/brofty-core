@@ -44,14 +44,14 @@ async function updateProject(): Promise<boolean> {
   try {
     // Method 1: Using cwd option with template literals
     logger.info("Pulling latest code...");
-    const gitResult = await execa({ cwd: PROJECT_ROOT })`git pull`;
+    const gitResult = await execa({ cwd: PROJECT_ROOT, stdio: "pipe" })`git pull`;
     // logger.info("Git pull output:", gitResult.stdout);
     if (gitResult.stderr) {
       logger.warn("Git pull warnings:", gitResult.stderr);
     }
     // Method 2: Using traditional syntax with options
     // logger.info("Installing dependencies...");
-    const yarnInstallResult = await execa(
+    await execa(
       "yarn",
       ["install", "--production=false"],
       {
@@ -147,8 +147,7 @@ export default async function check_update() {
 
     // Step 3: Restart the server only if both update and compile succeeded
     try {
-      await restart_core_server();
-      logger.info("Update process completed successfully");
+      restart_core_server();
       return true;
     } catch (error) {
       logger.error("Failed to restart server:", error);
