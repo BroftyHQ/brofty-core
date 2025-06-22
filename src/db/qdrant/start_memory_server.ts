@@ -8,22 +8,22 @@ export async function start_memory_server() {
     
     // On Windows, use %cd% for current directory in Docker
     const storagePath = path.join(cwd, "qdrant_storage");
-    const containerName = "brofty-qdrant";
+    const containerName = "brofty-memory-server";
     const dockerCmd = `docker run -d --name ${containerName} -p 6333:6333 -p 6334:6334 -v "${storagePath}:/qdrant/storage" qdrant/qdrant`;
     // Check if the container is already running
     exec(`docker ps --filter "name=${containerName}" --filter "status=running" -q`, (checkErr, checkStdout) => {
         if (checkErr) {
-            logger.error(`Error checking Qdrant container status: ${checkErr.message}`);
+            logger.error(`Error checking Memory server status: ${checkErr.message}`);
             return;
         }
         if (checkStdout && checkStdout.trim().length > 0) {
-            logger.info(`Qdrant container '${containerName}' is already running. Skipping start.`);
+            logger.info(`Memory server '${containerName}' is already running. Skipping start.`);
             return;
         }
         // If not running, remove any stopped container with the same name
         exec(`docker rm -f ${containerName}`, (removeErr) => {
             if (removeErr && !removeErr.message.includes('No such container')) {
-                logger.error(`Error removing existing Qdrant container: ${removeErr.message}`);
+                logger.error(`Error removing existing Memory server: ${removeErr.message}`);
                 return;
             }
             exec(dockerCmd, (error, stdout, stderr) => {
@@ -32,7 +32,7 @@ export async function start_memory_server() {
                     if (typeof error.code === 'string' && error.code === 'ENOENT') {
                         logger.error('Docker is not installed or not found in PATH. Please install Docker Desktop and ensure it is running.');
                     } else {
-                        logger.error(`Error starting Qdrant container: ${error.message}`);
+                        logger.error(`Error starting Memory server: ${error.message}`);
                     }
                     return;
                 }
@@ -44,7 +44,7 @@ export async function start_memory_server() {
                     logger.error(`Qdrant stderr: ${stderr}`);
                 }
                 if (stdout && stdout.trim().length > 0) {
-                    logger.info(`Qdrant container started: ${stdout}`);
+                    logger.info(`Memory server started: ${stdout}`);
                 } else {
                     logger.error('Docker command executed but no container was started. Please check Docker status.');
                 }
@@ -63,13 +63,13 @@ export async function stop_memory_server(): Promise<void> {
         // First, check if the container exists and is running
         exec(`docker ps --filter "name=${containerName}" --filter "status=running" -q`, (checkErr, checkStdout) => {
             if (checkErr) {
-                logger.error(`Error checking Qdrant container status: ${checkErr.message}`);
+                logger.error(`Error checking Memory server status: ${checkErr.message}`);
                 reject(checkErr);
                 return;
             }
             
             if (!checkStdout || checkStdout.trim().length === 0) {
-                logger.info(`Qdrant container '${containerName}' is not running. Nothing to stop.`);
+                logger.info(`Memory server '${containerName}' is not running. Nothing to stop.`);
                 resolve();
                 return;
             }
@@ -79,11 +79,11 @@ export async function stop_memory_server(): Promise<void> {
                 if (err) {
                     // Check if the error is because container doesn't exist
                     if (err.message.includes('No such container')) {
-                        logger.info(`Qdrant container '${containerName}' does not exist. Already cleaned up.`);
+                        logger.info(`Memory server '${containerName}' does not exist. Already cleaned up.`);
                         resolve();
                         return;
                     }
-                    logger.error(`Error stopping/removing Qdrant container: ${err.message}`);
+                    logger.error(`Error stopping/removing Memory server: ${err.message}`);
                     reject(err);
                     return;
                 }
@@ -92,7 +92,7 @@ export async function stop_memory_server(): Promise<void> {
                     logger.warn(`Qdrant stop stderr: ${stderr}`);
                 }
                 
-                logger.info(`Qdrant container '${containerName}' stopped and removed successfully.`);
+                logger.info(`Memory server '${containerName}' stopped and removed successfully.`);
                 resolve();
             });
         });
