@@ -1,9 +1,6 @@
 import { IS_PRODUCTION } from "./common/constants.js";
 import logger from "./common/logger.js";
 import pm2 from "pm2";
-import path from "path";
-
-const PROJECT_ROOT = path.resolve(process.cwd());
 
 export default async function restart_core_server() {
   // code is already fetched and compiled
@@ -34,30 +31,19 @@ async function restartPM2Process(processName: string): Promise<void> {
       if (err) {
         reject(new Error(`Failed to connect to PM2: ${err.message}`));
         return;
-      } // Start the process from ecosystem.config.cjs with production environment
+      }
+      pm2.restart(processName, (restartErr) => {
+        pm2.disconnect();
 
-      const configPath = path.join(PROJECT_ROOT, "ecosystem.config.cjs");
-      //@ts-ignore
-      pm2.start(
-        configPath,
-        {
-          env: "production",
-          name: processName,
-          force: true, // Force restart the process
-        },
-        (startErr) => {
-          pm2.disconnect();
-
-          if (startErr) {
-            reject(
-              new Error(`Failed to start ${processName}: ${startErr.message}`)
-            );
-            return;
-          }
-
-          resolve();
+        if (restartErr) {
+          reject(
+            new Error(`Failed to restart ${processName}: ${restartErr.message}`)
+          );
+          return;
         }
-      );
+
+        resolve();
+      });
     });
   });
 }
