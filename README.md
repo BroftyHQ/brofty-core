@@ -5,7 +5,6 @@ brofty-core is the core engine for Brofty AI, an extensible, local-first AI assi
 ## Prerequisites
 - **Docker**: You need Docker installed and running before running `yarn start`.
 
-
 ## Features
 - Modular architecture for easy extension
 - Local-first: runs on your machine, keeps your data private
