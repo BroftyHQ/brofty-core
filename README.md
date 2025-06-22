@@ -3,7 +3,6 @@
 brofty-core is the core engine for Brofty AI, an extensible, local-first AI assistant platform. It provides a modular backend for running, managing, and extending AI-powered workflows, with support for LLMs, memory, tools, and more. This project is designed for privacy, hackability, and easy integration with custom tools and models.
 
 ## Prerequisites
-
 - **Docker**: You need Docker installed and running before running `yarn start`.
 
 ## Features
