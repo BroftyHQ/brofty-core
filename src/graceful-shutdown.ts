@@ -15,7 +15,7 @@ export async function gracefulShutdown(signal: string) {
   
   try {
     await stop_core_server();
-    logger.info('Server stopped successfully');
+    logger.info('############ Server stopped successfully ############');
     process.exit(0);
   } catch (error) {
     logger.error('Error during graceful shutdown:', error);

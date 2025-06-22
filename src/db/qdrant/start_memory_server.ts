@@ -72,8 +72,6 @@ export async function stop_memory_server(): Promise<void> {
   const { exec } = await import("child_process");
 
   return new Promise((resolve, reject) => {
-    logger.info("Stopping Qdrant memory server...");
-
     // First, check if the container exists and is running
     exec(
       `docker ps --filter "name=${containerName}" --filter "status=running" -q`,
@@ -117,10 +115,9 @@ export async function stop_memory_server(): Promise<void> {
             if (stderr) {
               logger.warn(`Qdrant stop stderr: ${stderr}`);
             }
-
-            logger.info(
-              `Memory server '${containerName}' stopped and removed successfully.`
-            );
+            // logger.info(
+            //   `Memory server '${containerName}' stopped and removed successfully.`
+            // );
             resolve();
           }
         );
