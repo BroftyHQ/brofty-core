@@ -16,7 +16,6 @@ brofty-core is the core engine for Brofty AI, an extensible, local-first AI assi
 
 
 ## Getting Started
-
 To run brofty-core locally:
 
 1. **Clone the repository:**
