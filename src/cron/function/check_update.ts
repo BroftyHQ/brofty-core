@@ -48,7 +48,7 @@ async function updateProject(): Promise<boolean> {
     // logger.info("Git pull output:", gitResult.stdout);
     if (gitResult.stderr) {
       logger.warn("Git pull warnings:", gitResult.stderr);
-    } 
+    }
     // Method 2: Using traditional syntax with options
     // logger.info("Installing dependencies...");
     const yarnInstallResult = await execa(
@@ -116,6 +116,10 @@ async function compileProject(): Promise<boolean> {
 export default async function check_update() {
   // logger.info("Checking for brofty core server updates");
   const CURRENT_HASH = await getCurrentCommitHash();
+  if (CURRENT_HASH === null) {
+    logger.error("Could not fetch current commit hash");
+    return false;
+  }
   const REMOTE_HASH = await getRemoteCommitHash();
   // logger.info(`Current commit hash: ${CURRENT_HASH}`);
   // logger.info(`Remote commit hash: ${REMOTE_HASH}`);

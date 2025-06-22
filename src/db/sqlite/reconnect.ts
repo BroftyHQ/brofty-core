@@ -9,7 +9,6 @@ export async function ensureDBConnection(): Promise<void> {
   try {
     // Test the connection
     await sequelize.authenticate();
-    logger.info("Database connection is active");
   } catch (error) {
     logger.info("Database connection lost, attempting to reconnect...");
     try {
@@ -32,7 +31,6 @@ export async function safeDatabaseSync(): Promise<void> {
   try {
     await ensureDBConnection();
     await sequelize.sync({ alter: true, logging: false });
-    logger.info("Database synced successfully");
   } catch (error) {
     logger.error("Failed to sync database:", error);
     throw error;

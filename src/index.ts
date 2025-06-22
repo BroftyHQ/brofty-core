@@ -1,17 +1,17 @@
-import start_core_server, { stop_core_server } from "./core_server.js";
+import logger from "./common/logger.js";
+import start_core_server from "./core_server.js";
+import { gracefulShutdown } from "./graceful-shutdown.js";
 
 // Start the server
 start_core_server();
 
-// Handle graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully...');
-  await stop_core_server();
-  process.exit(0);
+// PM2 process message listener for graceful shutdown
+process.on('message', (msg) => {
+  if (msg === 'shutdown' || (typeof msg === 'object' && msg && 'type' in msg && (msg as any).type === 'shutdown')) {
+    gracefulShutdown('PM2_MESSAGE');
+  }
 });
 
-process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down gracefully...');
-  await stop_core_server();
-  process.exit(0);
-});
+// Handle graceful shutdown signals (backup for non-PM2 environments)
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

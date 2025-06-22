@@ -23,6 +23,8 @@ import logger from "./common/logger.js";
 import { getCurrentCommitHash } from "./libs/github.js";
 import start_cron from "./cron/index.js";
 import { safeDatabaseSync } from "./db/sqlite/reconnect.js";
+import { v1Router } from "./rest/index.js";
+import { setServerInstances } from "./stop-core-server.js";
 
 interface MyContext {
   token?: string;
@@ -133,23 +135,9 @@ async function start_core_server() {
         callback(null, false);
         return;
       }
-    },
-  });
-
-  app.get("/rest/v1/status", corsConfig, (req, res) => {
-    res.status(200).json({
-      status: "ok",
-      message: `Brofty SSR server is running in ${
-        IS_PRODUCTION ? "production" : "development"
-      } mode`,
-    });
-  });
-  app.get("/test", corsConfig, (req, res) => {
-    res.status(200).json({
-      status: "ok",
-      message: getCurrentCommitHash(),
-    });
-  });
+    },  });
+  // Mount REST routes
+  app.use("/rest/v1", corsConfig, v1Router);
 
   // Set up our Express middleware to handle CORS, body parsing,
   // and our expressMiddleware function.
@@ -170,13 +158,20 @@ async function start_core_server() {
         return await get_ctx_with_auth_token(token);
       },
     })  );  
-
   // Modified server startup
   await new Promise<void>((resolve) => {
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
     safeDatabaseSync().then(async () => {
       user_initialization();
       cronJobs = await start_cron();
+      
+      // Set server instances for graceful shutdown
+      setServerInstances({
+        apolloServer,
+        cronJobs,
+        httpServer,
+        serverCleanup
+      });
     }).catch((error) => {
       logger.error("Database sync failed:", error);
     });
@@ -184,72 +179,4 @@ async function start_core_server() {
   logger.info(`🚀 Brofty Core Server ready!!!`);
 }
 
-async function stop_core_server(shouldCloseDB: boolean = true) {
-  logger.info("Shutting down Brofty Core Server...");
-
-  try {
-    // Stop cron jobs first
-    if (cronJobs && cronJobs.length > 0) {
-      logger.info("Stopping cron jobs...");
-      cronJobs.forEach((job) => {
-        if (job && typeof job.stop === "function") {
-          job.stop();
-        }
-      });
-      cronJobs = [];
-    }
-
-    // Stop Apollo Server
-    if (apolloServer) {
-      logger.info("Stopping Apollo Server...");
-      await apolloServer.stop();
-      apolloServer = null;
-    }
-
-    // Stop the WebSocket server
-    logger.info("Stopping WebSocket server...");
-    await serverCleanup.dispose();
-
-    // Close the HTTP server
-    logger.info("Stopping HTTP server...");
-    if (httpServer.listening) {
-      await new Promise<void>((resolve, reject) => {
-      httpServer.close((err) => {
-        if (err) {
-        reject(err);
-        } else {
-        resolve();
-        }
-      });
-      });
-    } else {
-      logger.info("HTTP server is not running.");
-    }
-
-    // Stop memory server (Qdrant Docker container)
-    logger.info("Stopping memory server...");
-    await stop_memory_server();    // Only close database connections if explicitly requested (not during restart)
-    if (shouldCloseDB) {
-      logger.info("Closing database connections...");
-      try {
-        // Check if Sequelize is connected before closing
-        await sequelize.authenticate();
-        logger.info("Sequelize connection verified, closing...");
-        await sequelize.close();
-        logger.info("Database connection closed successfully");
-      } catch (error) {
-        logger.info("Sequelize is not connected or already closed:", (error as Error).message);
-      }
-    } else {
-      logger.info("Keeping database connection open for restart");
-    }
-
-    logger.info("Brofty Core Server stopped successfully");
-  } catch (error) {
-    logger.error("Error during server shutdown:", error);
-    throw error;
-  }
-}
-
 export default start_core_server;
-export { stop_core_server };
