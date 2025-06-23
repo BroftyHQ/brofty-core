@@ -9,7 +9,6 @@ export async function executeFunctionCalls(
   tool_calls: ToolCall[],
   id: string,
   initial_response_time: string,
-  recursion_count: number
 ): Promise<boolean> {
   let has_function_calls = false;
 
@@ -22,7 +21,7 @@ export async function executeFunctionCalls(
     const scopedFunctionName = functionName.split("___")[1];
 
     logger.info(
-      `Function call detected: ${scopedFunctionName} with arguments: ${args} - Recursion count: ${recursion_count}`
+      `Function call detected: ${scopedFunctionName} with arguments: ${args}`
     );
 
     pubsub.publish(`MESSAGE_STREAM`, {

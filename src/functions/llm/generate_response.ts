@@ -1,5 +1,7 @@
 import get_response_stream from "./get_response_stream.js";
-import { message_model } from "../../db/sqlite/models.js";
+import {
+  message_model,
+} from "../../db/sqlite/models.js";
 import { DateTime } from "luxon";
 import logger from "../../common/logger.js";
 import buildMessages from "./build_messages.js";
@@ -65,8 +67,7 @@ export default async function generate_response({
         streamProcessor.getFunctionCache(),
         tool_calls,
         id,
-        initial_response_time,
-        recursion_count
+        initial_response_time
       );
       streamProcessor.clearFunctionCache();
     }
@@ -103,5 +104,6 @@ export default async function generate_response({
       },
       { where: { id } }
     );
+     // long term memory management
   }
 }

@@ -81,4 +81,10 @@ const mcp_server_model = sequelize.define("MCPServer", {
   },
 });
 
-export { message_model, user_preference_model, tools_model, mcp_server_model };
+
+export {
+  message_model,
+  user_preference_model,
+  tools_model,
+  mcp_server_model
+};
