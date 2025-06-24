@@ -7,6 +7,8 @@ type Mutation {
   removeMCPServer(name: String!): Boolean
   stopMCPServer(name: String!): Boolean
   setPreferredLLM(llmId: String!): Boolean
+
+  deleteMemory(id: String!): Boolean!
 }
 `;
 export default mutations;

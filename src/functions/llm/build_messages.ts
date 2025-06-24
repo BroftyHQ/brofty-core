@@ -1,13 +1,23 @@
+import get_ltm from "../../memory/get_ltm.js";
 import get_mtm from "../../memory/get_mtm.js";
 import get_stm from "../../memory/get_stm.js";
 import { Message, ToolCall } from "./types.js";
 
-export default async function buildMessages(
-  messsage: string,
-  tool_calls: ToolCall[]
-): Promise<Message[]> {
+export default async function buildMessages({
+  messsage,
+  tool_calls = [],
+  user_token,
+}: {
+  messsage: string;
+  tool_calls: ToolCall[];
+  user_token: string;
+}): Promise<Message[]> {
   const current_stm = await get_stm();
   const medium_term_memory = await get_mtm();
+  const long_term_memory = await get_ltm({
+    query: messsage,
+    user_token,
+  });
 
   const messages: Message[] = [
     {
@@ -18,6 +28,7 @@ export default async function buildMessages(
     When responding with code, ensure it is correct and properly formatted.
     If you are unsure, say so honestly.`,
     },
+    ...long_term_memory,
     ...medium_term_memory,
     ...current_stm,
     {
@@ -39,7 +50,7 @@ export default async function buildMessages(
         },
       })),
     });
-    
+
     // add tool calls to the messages
     for (const tool_call of tool_calls) {
       messages.push({

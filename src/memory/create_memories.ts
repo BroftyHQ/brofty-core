@@ -3,6 +3,8 @@ import logger from "../common/logger.js";
 import getOpenAIClient from "../llms/openai.js";
 import { DateTime } from "luxon";
 import { memories_model } from "../db/sqlite/models.js";
+import { randomUUID } from "crypto";
+import qdrant_client from "../db/qdrant/client.js";
 
 export default async function createMemories({
   statements,
@@ -21,13 +23,14 @@ export default async function createMemories({
     messages: [
       {
         role: "system",
-        content: `You are a memory extractor that reads user messages and identifies important facts, preferences, goals, or personal context the user has explicitly shared. Your job is to create clear and concise memory statements that can be stored for long-term use.
+        content: `You are a memory extractor that reads messages and identifies important facts, preferences, goals, or personal context that I have explicitly shared. Your job is to create memory statements that can be stored for long-term use.
           Guidelines:
-          Only extract information the user directly stated.
+          Only extract information that I have directly stated.
+          You can group similar statements together.
+          Memory statements can be a single sentence or a short paragraph.
           Do not infer, assume, or hallucinate anything.
           If there are no meaningful facts to remember, return an empty array.
           Output must follow this JSON format: {"memory": ["memory statement 1","memory statement 2"]}
-
           `,
       },
       {
@@ -52,14 +55,37 @@ export default async function createMemories({
       return false;
     }
     const memories = parsed.memory.map((m: string, index: number) => ({
-      id: `memory-${nanoid()}`,
+      id: randomUUID(),
       content: m,
       index: "user",
       created_at: DateTime.now().toMillis(),
     }));
+    if (memories.length === 0) {
+      // logger.info("No valid memories extracted from the response.");
+      return false;
+    }
 
     // Assuming memories_model is defined and ready to use
     await memories_model.bulkCreate(memories);
+    
+
+    // add memories to vector database
+    const vectors:any = await client.embeddings.create({
+      model: "na",
+      input: memories.map((m) => {
+        return {
+          id: m.id,
+          text: m.content,
+        };
+      }),
+    });
+    await qdrant_client.upsert("user", {
+      points: vectors.embeddings.map((vector: any) => ({
+        id: vector.id,
+        vector: vector.embedding,
+        payload: memories.find((m) => m.id === vector.id) || {},
+      })),
+    });
   } catch (error) {
     logger.error("Failed to parse memory response:", error);
     return false;
