@@ -38,7 +38,7 @@ export default async function generate_response({
   recursion_count++;
 
   // Build messages for the LLM
-  const messages = await buildMessages(messsage, tool_calls);
+  const messages = await buildMessages({ messsage, tool_calls, user_token });
 
   // Get response stream
   const stream = await get_response_stream({
@@ -104,9 +104,9 @@ export default async function generate_response({
         text: `${exisitingMessage.text} ${finalText}`,
         updated_at: DateTime.now().toMillis(),
       },
-      { where: { id } }    );
+      { where: { id } }
+    );
     // long term memory management
     await manageLongTermMemory(user_token);
   }
 }
-
