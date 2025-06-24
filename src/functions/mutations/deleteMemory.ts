@@ -18,10 +18,14 @@ export async function deleteMemory(
     throw new Error(`Memory with id ${id} not found`);
   }
 
-  // remove embedding from Qdrant
-  await qdrant_client.delete("user", {
-    points: [memory.id],
-  });
+  try {
+    // remove embedding from Qdrant
+    await qdrant_client.delete("user", {
+      points: [memory.id],
+    });
+  } catch (error) {
+    console.error("Error removing embedding from Qdrant:", error);
+  }
 
   // remove memory from SQLite
   await memories_model.destroy({
