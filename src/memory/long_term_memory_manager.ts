@@ -4,11 +4,12 @@ import logger from "../common/logger.js";
 import { getPreference, setPreference } from "../user_preferences/index.js";
 import { Op } from "sequelize";
 import getOpenAIClient from "../llms/openai.js";
+import create_memories from "./create_memories.js";
 
 export async function manageLongTermMemory(user_token: string): Promise<void> {
   const ltm_cursor_str = await getPreference("long_term_memory_cursor");
   const ltm_cursor = parseInt(ltm_cursor_str) || null;
-  
+
   if (ltm_cursor) {
     // get all messages after the cursor limit 20 and summarize
     const messagesAfterCursor = await message_model.findAll({
@@ -20,11 +21,11 @@ export async function manageLongTermMemory(user_token: string): Promise<void> {
       order: [["created_at", "DESC"]],
       limit: 20, // Limit to 20 messages
     });
-    
+
     if (messagesAfterCursor.length < 20) {
       return;
     }
-    
+
     const summarized = await summarizeMessages(user_token, messagesAfterCursor);
     if (summarized) {
       // update the cursor to the last message created_at timestamp
@@ -45,7 +46,7 @@ export async function manageLongTermMemory(user_token: string): Promise<void> {
     if (messages.length < 20) {
       return;
     }
-    
+
     const summarized = await summarizeMessages(user_token, messages);
     if (summarized) {
       const lastMessage: any = messages[0];
@@ -67,7 +68,7 @@ async function summarizeMessages(
       final_statements.push(`${element.text}`);
     }
   }
-  
+
   if (final_statements.length === 0) {
     return false;
   }
@@ -89,9 +90,11 @@ async function summarizeMessages(
     ],
     stream: false,
   });
-  
+
   if (!response || !response.choices || response.choices.length === 0) {
-    logger.error("Failed to get a valid response from the LLM for summarization.");
+    logger.error(
+      "Failed to get a valid response from the LLM for summarization."
+    );
     return false;
   }
 
@@ -101,6 +104,12 @@ async function summarizeMessages(
     first_message_id: messages[messages.length - 1].id,
     last_message_id: messages[0].id,
     created_at: DateTime.now().toMillis(),
+  });
+
+  // create memories in the database and vector
+  create_memories({
+    statements: final_statements,
+    user_token: user_token,
   });
 
   return true;

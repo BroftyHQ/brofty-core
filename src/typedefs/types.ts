@@ -50,5 +50,12 @@ type SystemLog {
   message: String!
   timestamp: String!
 }
+
+type UserMemory {
+  id: ID!
+  content: String!
+  index: String!
+  created_at: String!
+}
 `;
 export default types;

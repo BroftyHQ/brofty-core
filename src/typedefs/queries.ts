@@ -8,6 +8,8 @@ type Query {
   getRunningMCPServers: [RunningMCPServer]
   getAvailableTools: [Tool]
   getSelectedPreferredLLM: String
+
+  getUserMemories: [UserMemory]
 }
 `;
 export default queries;
