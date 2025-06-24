@@ -4,6 +4,9 @@ export default async function get_ltm({
   query,
 }: {
   query: string;
-}): Promise<string[]> {
+}): Promise<{
+  role: "system";
+  content: string;
+}[]> {
   return [];
 }
