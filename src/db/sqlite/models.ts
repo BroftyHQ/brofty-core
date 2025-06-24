@@ -81,10 +81,34 @@ const mcp_server_model = sequelize.define("MCPServer", {
   },
 });
 
+const message_summary_model = sequelize.define("MessageSummary", {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+  },
+  summary: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  first_message_id: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  last_message_id: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  created_at: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+  }
+});
+
 
 export {
   message_model,
   user_preference_model,
   tools_model,
-  mcp_server_model
+  mcp_server_model,
+  message_summary_model
 };

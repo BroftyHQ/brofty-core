@@ -1,3 +1,4 @@
+import get_mtm from "../../memory/get_mtm.js";
 import get_stm from "../../memory/get_stm.js";
 import { Message, ToolCall } from "./types.js";
 
@@ -6,6 +7,7 @@ export default async function buildMessages(
   tool_calls: ToolCall[]
 ): Promise<Message[]> {
   const current_stm = await get_stm();
+  const medium_term_memory = await get_mtm();
 
   const messages: Message[] = [
     {
@@ -16,6 +18,7 @@ export default async function buildMessages(
     When responding with code, ensure it is correct and properly formatted.
     If you are unsure, say so honestly.`,
     },
+    ...medium_term_memory,
     ...current_stm,
     {
       role: "user",

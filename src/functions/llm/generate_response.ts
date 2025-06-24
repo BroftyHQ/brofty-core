@@ -1,6 +1,7 @@
 import get_response_stream from "./get_response_stream.js";
 import {
   message_model,
+  message_summary_model,
 } from "../../db/sqlite/models.js";
 import { DateTime } from "luxon";
 import logger from "../../common/logger.js";
@@ -8,6 +9,7 @@ import buildMessages from "./build_messages.js";
 import { StreamProcessor } from "./stream_processor.js";
 import { executeFunctionCalls } from "./execute_function_calls.js";
 import { GenerateResponseParams } from "./types.js";
+import { manageLongTermMemory } from "../../memory/long_term_memory_manager.js";
 
 export default async function generate_response({
   id,
@@ -102,8 +104,9 @@ export default async function generate_response({
         text: `${exisitingMessage.text} ${finalText}`,
         updated_at: DateTime.now().toMillis(),
       },
-      { where: { id } }
-    );
-     // long term memory management
+      { where: { id } }    );
+    // long term memory management
+    await manageLongTermMemory(user_token);
   }
 }
+
