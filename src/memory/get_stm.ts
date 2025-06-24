@@ -10,7 +10,7 @@ export default async function get_stm(disable = false): Promise<
     return [];
   }
   const last_20_messages: any = await message_model.findAll({
-    order: [["createdAt", "DESC"]],
+    order: [["created_at", "DESC"]],
     limit: 20,
     offset: 2, // Skip the last 2 message which is usually latest user input and uncompleted AI response
   });

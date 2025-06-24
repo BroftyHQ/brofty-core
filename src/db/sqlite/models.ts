@@ -81,4 +81,53 @@ const mcp_server_model = sequelize.define("MCPServer", {
   },
 });
 
-export { message_model, user_preference_model, tools_model, mcp_server_model };
+const message_summary_model = sequelize.define("MessageSummary", {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+  },
+  summary: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  first_message_id: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  last_message_id: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  created_at: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+  },
+});
+
+const memories_model = sequelize.define("Memories", {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+  },
+  content: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  index: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  created_at: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+  },
+});
+
+export {
+  message_model,
+  user_preference_model,
+  tools_model,
+  mcp_server_model,
+  message_summary_model,
+  memories_model,
+};
