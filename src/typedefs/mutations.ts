@@ -8,6 +8,7 @@ type Mutation {
   stopMCPServer(name: String!): Boolean
   setPreferredLLM(llmId: String!): Boolean
 
+  syncTools: Boolean!
   deleteMemory(id: String!): Boolean!
 }
 `;

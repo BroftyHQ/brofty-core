@@ -4,6 +4,7 @@ import { mcp_server_model, memories_model, message_model, tools_model } from "..
 import { withAuth } from "./withAuth.js";
 import { getInitializedClientsInfo } from "../mcp/getMcpClient.js";
 import get_user_preferred_llm from "../functions/llm/get_user_preferred_llm.js";
+import qdrant_client from "../db/qdrant/client.js";
 
 export const Query = {
   status: () => {
@@ -99,6 +100,21 @@ export const Query = {
     ) => {
       const tools = await tools_model.findAll({});
       return tools;
+    }
+  ),
+  areToolsSynced: withAuth(
+    async (
+      _parent: any,
+      _args: any,
+      context: AuthorizedGraphQLContext,
+      _info: any
+    ) => {
+      // check is all tools in the database are in the qdrant collection
+      const tools = await tools_model.findAll({});
+      const toolNames = tools.map((tool: any) => tool.name);
+      const qdrantTools = await qdrant_client.getCollection("tools");
+      const qdrantToolCount = qdrantTools.points_count;
+      return toolNames.length === qdrantToolCount;
     }
   ),
   getSelectedPreferredLLM: withAuth(

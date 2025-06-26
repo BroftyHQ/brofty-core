@@ -7,6 +7,7 @@ import stopMCPServer from "../functions/mutations/stopMCPServer.js";
 import { setPreferredLLM } from "../functions/mutations/setPreferredLLM.js";
 import { syncMCPServerTools } from "../functions/mutations/syncMCPServerTools.js";
 import { deleteMemory } from "../functions/mutations/deleteMemory.js";
+import { syncTools } from "../functions/mutations/syncTools.js";
 
 export const Mutation = {
   sendMessage: withAuth(sendMessage),
@@ -16,5 +17,6 @@ export const Mutation = {
   removeMCPServer: withAuth(removeMCPServer),
   stopMCPServer: withAuth(stopMCPServer),
   setPreferredLLM: withAuth(setPreferredLLM),
+  syncTools: withAuth(syncTools),
   deleteMemory: withAuth(deleteMemory)
 };
