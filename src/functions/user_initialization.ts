@@ -1,12 +1,7 @@
-import { DateTime } from "luxon";
-import { getPreference, setPreference } from "../user_preferences/index.js";
-import fs from "fs";
 import { tools_model } from "../db/sqlite/models.js";
 import logger from "../common/logger.js";
 import default_tools from "../tools/default_tools.js";
 import qdrant_client from "../db/qdrant/client.js";
-import { randomUUID } from "crypto";
-import getOpenAIClient from "../llms/openai.js";
 
 const QDRANT_MANDATORY_COLLECTIONS = ["user", "tools"];
 
@@ -15,7 +10,8 @@ const QDRANT_MANDATORY_COLLECTIONS = ["user", "tools"];
 export default async function user_initialization(): Promise<void> {
   // create mandatory collections in Qdrant if they do not exist
   for await (const collectionName of QDRANT_MANDATORY_COLLECTIONS) {
-    await qdrant_client.getCollection(collectionName).catch(async (error) => {
+    await qdrant_client.getCollection(collectionName)
+    .catch(async (error) => {
       if (error.message.includes("Not Found")) {
         await qdrant_client.createCollection(collectionName, {
           vectors: {

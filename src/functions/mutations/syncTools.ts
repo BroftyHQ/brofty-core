@@ -31,10 +31,11 @@ export async function syncTools(
       .upsert("tools", {
         points: [
           {
-            id: tool.name,
+            // get index of tool as id
+            id: tools.indexOf(tool) + 1,
             vector: res.embedding,
             payload: {
-              name: tool.name,
+              name: `local___${tool.name}`,
             },
           },
         ],

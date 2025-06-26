@@ -21,6 +21,7 @@ import start_cron from "./cron/index.js";
 import { safeDatabaseSync } from "./db/sqlite/reconnect.js";
 import { v1Router } from "./rest/index.js";
 import { setServerInstances } from "./stop-core-server.js";
+import user_initialization from "./functions/user_initialization.js";
 
 interface MyContext {
   token?: string;
@@ -159,7 +160,7 @@ async function start_core_server() {
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
     safeDatabaseSync().then(async () => {
       cronJobs = await start_cron();
-      
+      user_initialization();
       // Set server instances for graceful shutdown
       setServerInstances({
         apolloServer,

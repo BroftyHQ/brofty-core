@@ -110,11 +110,10 @@ export const Query = {
       _info: any
     ) => {
       // check is all tools in the database are in the qdrant collection
-      const tools = await tools_model.findAll({});
-      const toolNames = tools.map((tool: any) => tool.name);
+      const tool_count = await tools_model.count({});
       const qdrantTools = await qdrant_client.getCollection("tools");
       const qdrantToolCount = qdrantTools.points_count;
-      return toolNames.length === qdrantToolCount;
+      return tool_count === qdrantToolCount;
     }
   ),
   getSelectedPreferredLLM: withAuth(
