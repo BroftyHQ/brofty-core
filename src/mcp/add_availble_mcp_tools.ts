@@ -1,12 +1,19 @@
 import logger from "../common/logger.js";
 import { tools_model } from "../db/sqlite/models.js";
+import { syncTools } from "../functions/mutations/syncTools.js";
+import { AuthorizedGraphQLContext } from "../types/context.js";
 import getMcpClient from "./getMcpClient.js";
 import { remove_availble_mcp_tools } from "./remove_availble_mcp_tools.js";
 
-export default async function add_availble_mcp_tools(
-  name: string,
-  first_time = false
-) {
+export default async function add_availble_mcp_tools({
+  name,
+  first_time = false,
+  context,
+}: {
+  name: string;
+  first_time: boolean;
+  context: AuthorizedGraphQLContext;
+}) {
   let mcp = null;
 
   try {
@@ -43,4 +50,7 @@ export default async function add_availble_mcp_tools(
   logger.info(
     `Added available tools for MCP server '${name}': ${tools.length} tools.`
   );
+  if (tools.length > 0) {
+    syncTools(null, null, context, null);
+  }
 }

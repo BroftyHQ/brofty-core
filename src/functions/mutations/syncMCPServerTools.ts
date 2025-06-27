@@ -12,6 +12,6 @@ export async function syncMCPServerTools(
   if (!name) {
     throw new Error("MCP server name is required");
   }
-  await add_availble_mcp_tools(name);
+  await add_availble_mcp_tools({ name, first_time: false, context: _context });
   return true;
 }

@@ -1,6 +1,6 @@
 import logger from "../../common/logger.js";
 import qdrant_client from "../../db/qdrant/client.js";
-import { tools_model } from "../../db/sqlite/models.js";
+import { mcp_server_model, tools_model } from "../../db/sqlite/models.js";
 import getOpenAIClient from "../../llms/openai.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 
@@ -15,9 +15,24 @@ export async function syncTools(
   const tools: any = await tools_model.findAll();
 
   for await (const tool of tools) {
+    const mcp_server = tool.mcp_server || "local";
+    let mcp_description = "";
+    if (mcp_server !== "local") {
+      // fetch MCP server description if available
+      const mcp: any = await mcp_server_model.findOne({
+        where: { name: mcp_server },
+        attributes: ["name", "description"],
+      });
+
+      if (mcp) {
+        mcp_description = `${mcp.name} - ${mcp.description || ""}`;
+      }
+    }
+
+    const embedding_input = `${mcp_description}\n${tool.description}`;
     const res: any = await openaiClient.embeddings.create({
       model: "text-embedding-ada-002",
-      input: tool.description,
+      input: embedding_input,
     });
     if (!res || !res.embedding) {
       logger.error(
@@ -35,7 +50,8 @@ export async function syncTools(
             id: tools.indexOf(tool) + 1,
             vector: res.embedding,
             payload: {
-              name: `local___${tool.name}`,
+              name: `${mcp_server}___${tool.name}`,
+              embedding_input,
             },
           },
         ],

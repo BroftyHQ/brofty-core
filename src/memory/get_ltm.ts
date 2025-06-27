@@ -41,8 +41,8 @@ export default async function get_ltm({
   return [
     {
       role: "system",
-      content: `Here are some relevant memories from your long-term memory that might help you with your query:\n\n
-    ${memories.join("\n\n")}`,
+      content: `Here are some relevant memories from long-term memory that might help you with your query:\n
+      ${memories.join("\n")}`,
     },
   ];
 }

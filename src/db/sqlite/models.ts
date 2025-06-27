@@ -62,6 +62,10 @@ const mcp_server_model = sequelize.define("MCPServer", {
     allowNull: false,
     primaryKey: true,
   },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   command: {
     type: DataTypes.STRING,
     allowNull: false,

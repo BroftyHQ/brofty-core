@@ -28,9 +28,30 @@ export async function executeFunctionCalls({
     const { name, arguments: args } = function_call;
 
     const functionCallId = function_call.tool_call_id;
+    if (
+      !functionCallId ||
+      typeof functionCallId !== "string" ||
+      functionCallId.trim() === "" ||
+      functionCallId == "null" ||
+      functionCallId == "undefined"
+    ) {
+      console.warn(
+        `Function call id is missing or invalid: '${functionCallId}'`
+      );
+      continue;
+    }
     const functionName = name;
     const function_scope = functionName.split("___")[0];
     const scopedFunctionName = functionName.split("___")[1];
+    let function_result = "";
+
+    if (!scopedFunctionName) {
+      console.warn(
+        `Function '${functionName}' is not recognized or not available in toolMap.`
+      );
+      function_result = `Error: Function '${functionName}' is not recognized or not available.`;
+      continue;
+    }
 
     logger.info(
       `Function call detected: ${scopedFunctionName} with arguments: ${args}`
@@ -60,15 +81,24 @@ export async function executeFunctionCalls({
     }
 
     if (parsedArgs) {
-      let function_result = "";
       if (function_scope === "local") {
         if (scopedFunctionName === "tool_search") {
           const tools_searched = await tool_search({
             ...parsedArgs,
             user_token: user_token,
           });
-          functions_suggestions = tools_searched || [];
-          function_result = `Searched and found ${functions_suggestions.length} tools.`;
+          // Merge tools_searched with existing functions_suggestions, avoiding duplicates
+          const combinedTools = [
+            ...functions_suggestions,
+            ...(tools_searched || []),
+          ];
+          functions_suggestions = [...new Set(combinedTools)];
+          function_result = `Searched and found ${
+            (tools_searched || []).length
+          } new tools. Total unique tools: ${functions_suggestions.length}.`;
+          logger.info(
+            `Function 'tool_search' found ${tools_searched.length} tools. Total unique tools: ${functions_suggestions.length}`
+          );
         } else {
           try {
             function_result = await toolMap[scopedFunctionName](parsedArgs);

@@ -31,7 +31,8 @@ export default async function buildMessages({
       Use the search tool broadly to discover tools related to the user's task.
       Only if you confirm that no tools are available or appropriate should you tell the user you cannot fulfill the request.
       Remember that you are allowed to plan multi-step reasoning or tool use to achieve the user's goal whenever possible.
-      If you are still unable to help after searching, admit it honestly and do not invent information.`,
+      If you are still unable to help after searching, admit it honestly and do not invent information. Do not try to calculate or guess answers that you do not know.
+      If you are unsure about something, ask the user for clarification or more information.`,
     },
     ...long_term_memory,
     ...medium_term_memory,

@@ -40,7 +40,7 @@ export async function addMCPServer(
     })
     .then(([server, created]) => {
       if (created) {
-        add_availble_mcp_tools(args.name, true);
+        add_availble_mcp_tools({ name: args.name, first_time: true, context });
       }
     })
     .catch((error) => {

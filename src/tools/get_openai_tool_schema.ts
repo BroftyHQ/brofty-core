@@ -39,6 +39,8 @@ export default async function get_openai_tool_schema({
     toolsJson.push(tool_schema);
   }
   let openaiTools = [];
+  const addedToolNames = new Set();
+  
   // Recursively remove any property where type is an array, and remove from required if present
   function cleanOpenAISchemaTypes(schema) {
     if (Array.isArray(schema)) {
@@ -77,6 +79,14 @@ export default async function get_openai_tool_schema({
     const tool_def = tool.dataValues.defination;
 
     if (!tool_def.name || !tool_def.description) continue;
+    
+    const toolName = `${mcp_server}___${tool_def.name}`;
+    
+    // Skip if tool is already added
+    if (addedToolNames.has(toolName)) {
+      continue;
+    }
+    
     const params = cleanOpenAISchemaTypes(
       JSON.parse(JSON.stringify(tool_def.parameters || tool_def.inputSchema))
     );
@@ -84,11 +94,13 @@ export default async function get_openai_tool_schema({
     openaiTools.push({
       type: "function",
       function: {
-        name: `${mcp_server}___${tool_def.name}`,
+        name: toolName,
         description: tool_def.description,
         parameters: params,
       },
     });
+    
+    addedToolNames.add(toolName);
   }
 
   return openaiTools;

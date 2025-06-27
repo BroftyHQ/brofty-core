@@ -20,7 +20,7 @@ export default async function tool_search({
   const relevant_tools = await qdrant_client.search("tools", {
     vector: response.embedding,
     with_payload: true,
-    limit: 10,
+    limit: 15,
   });
   const tool_names = relevant_tools.map((tool) => tool.payload.name);
   return tool_names;
