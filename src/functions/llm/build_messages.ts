@@ -33,9 +33,9 @@ export default async function buildMessages({
       Remember that you are allowed to plan multi-step reasoning or tool use to achieve the user's goal whenever possible.
       If you are still unable to help after searching, admit it honestly and do not invent information.`,
     },
-    // ...long_term_memory,
-    // ...medium_term_memory,
-    // ...current_stm,
+    ...long_term_memory,
+    ...medium_term_memory,
+    ...current_stm,
     {
       role: "user",
       content: messsage,
