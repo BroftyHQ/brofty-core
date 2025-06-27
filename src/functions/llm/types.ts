@@ -32,4 +32,5 @@ export type GenerateResponseParams = {
   initial_response_time: string;
   tool_calls?: ToolCall[];
   recursion_count?: number;
+  functions_suggestions?: string[];
 };

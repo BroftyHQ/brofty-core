@@ -3,14 +3,26 @@ import getMcpClient from "../../mcp/getMcpClient.js";
 import logger from "../../common/logger.js";
 import pubsub from "../../pubsub/index.js";
 import { FunctionCache, ToolCall } from "./types.js";
+import tool_search from "../../tools/tool_search.js";
 
-export async function executeFunctionCalls(
-  function_cache: { [key: number]: FunctionCache },
-  tool_calls: ToolCall[],
-  id: string,
-  initial_response_time: string,
-): Promise<boolean> {
+export async function executeFunctionCalls({
+  function_cache,
+  tool_calls,
+  id,
+  initial_response_time,
+  user_token,
+}: {
+  function_cache: { [key: number]: FunctionCache };
+  tool_calls: ToolCall[];
+  id: string;
+  initial_response_time: string;
+  user_token: string;
+}): Promise<{
+  has_function_calls: boolean;
+  functions_suggestions: string[];
+}> {
   let has_function_calls = false;
+  let functions_suggestions = [];
 
   for await (const function_call of Object.values(function_cache)) {
     const { name, arguments: args } = function_call;
@@ -50,14 +62,23 @@ export async function executeFunctionCalls(
     if (parsedArgs) {
       let function_result = "";
       if (function_scope === "local") {
-        try {
-          function_result = await toolMap[scopedFunctionName](parsedArgs);
-        } catch (error) {
-          console.error(
-            `Function '${functionName}' returned an error:`,
-            error
-          );
-          function_result = `Error: ${error.message}`;
+        if (scopedFunctionName === "tool_search") {
+          const tools_searched = await tool_search({
+            ...parsedArgs,
+            user_token: user_token,
+          });
+          functions_suggestions = tools_searched || [];
+          function_result = `Searched and found ${functions_suggestions.length} tools.`;
+        } else {
+          try {
+            function_result = await toolMap[scopedFunctionName](parsedArgs);
+          } catch (error) {
+            console.error(
+              `Function '${functionName}' returned an error:`,
+              error
+            );
+            function_result = `Error: ${error.message}`;
+          }
         }
       } else {
         // For MCP functions, we need to call the MCP server
@@ -84,7 +105,7 @@ export async function executeFunctionCalls(
       }
       function_log += `${JSON.stringify(function_result)}`;
     }
-    
+
     tool_calls.push({
       role: "tool",
       tool_call_id: functionCallId,
@@ -95,5 +116,5 @@ export async function executeFunctionCalls(
   }
 
   has_function_calls = tool_calls.length > 0;
-  return has_function_calls;
+  return { has_function_calls, functions_suggestions };
 }

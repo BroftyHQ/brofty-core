@@ -52,6 +52,7 @@ export async function sendMessage(
     initial_response_time: message.created_at.toString(),
     tool_calls: [],
     recursion_count: 0,
+    functions_suggestions: ["tool_search"]
   });
   return message;
 }

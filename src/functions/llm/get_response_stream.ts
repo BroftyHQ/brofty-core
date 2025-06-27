@@ -10,6 +10,7 @@ export default async function get_response_stream({
   id,
   user_token,
   messages,
+  functions_suggestions,
 }: {
   id: string;
   user_token: string;
@@ -18,10 +19,12 @@ export default async function get_response_stream({
     tool_call_id?: string; // Optional, only for tool messages
     content: string;
   }[];
+  functions_suggestions?: string[];
 }) {
   const client = await getOpenAIClient(user_token);
-  // const client = await getLocalLLMClient();
-  const tools = await get_openai_tool_schema();
+  const tools = await get_openai_tool_schema({
+    names: functions_suggestions,
+  });
   try {
     return await client.chat.completions.create({
       model: await get_user_preferred_llm(),

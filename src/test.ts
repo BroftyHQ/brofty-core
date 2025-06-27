@@ -73,7 +73,7 @@ async function searchMemories(query) {
     input: query,
   });
 
-  const search_results = await qdrant_client.search("memories", {
+  const search_results = await qdrant_client.search("tools", {
     vector: response.embedding,
     with_payload: true,
     limit: 3,
@@ -83,6 +83,6 @@ async function searchMemories(query) {
 }
 
 (async () => {
-  await addMemoriesToQdrant();
-  // await searchMemories("grow up");
+  // await addMemoriesToQdrant();
+  await searchMemories("need to send api request");
 })();

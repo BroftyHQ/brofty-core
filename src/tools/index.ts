@@ -7,7 +7,7 @@ import { http_client, http_client_def } from "./http_client.js";
 
 const tools: OpenAI.Responses.Tool[] = [
   calculate_expression_def,
-  http_client_def,
+  http_client_def
 ];
 
 export const toolMap = {

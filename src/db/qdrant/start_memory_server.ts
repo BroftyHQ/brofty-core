@@ -1,127 +1,132 @@
 import logger from "../../common/logger.js";
+import { execa } from "execa";
+import path from "path";
+
 const containerName = "brofty-memory-server";
 
 export async function start_memory_server() {
-  // run qdrant docker container
-  const { exec } = await import("child_process");
-  const path = await import("path");
-  const cwd = process.cwd();
+  try {
+    const cwd = process.cwd();
+    const storagePath = path.join(cwd, "qdrant_storage");
 
-  // On Windows, use %cd% for current directory in Docker
-  const storagePath = path.join(cwd, "qdrant_storage");
-  const dockerCmd = `docker run -d --name ${containerName} -p 6333:6333 -p 6334:6334 -v "${storagePath}:/qdrant/storage" qdrant/qdrant`;
-  // Check if the container is already running
-  exec(
-    `docker ps --filter "name=${containerName}" --filter "status=running" -q`,
-    (checkErr, checkStdout) => {
-      if (checkErr) {
-        logger.error(
-          `Error checking Memory server status: ${checkErr.message}`
-        );
-        return;
-      }
-      if (checkStdout && checkStdout.trim().length > 0) {
-        logger.info(
-          `Memory server '${containerName}' is already running. Skipping start.`
-        );
-        return;
-      }
-      // If not running, remove any stopped container with the same name
-      exec(`docker rm -f ${containerName}`, (removeErr) => {
-        if (removeErr && !removeErr.message.includes("No such container")) {
-          logger.error(
-            `Error removing existing Memory server: ${removeErr.message}`
-          );
-          return;
-        }
-        exec(dockerCmd, (error, stdout, stderr) => {
-          if (error) {
-            // error.code can be a number (exit code) or string (like 'ENOENT')
-            if (typeof error.code === "string" && error.code === "ENOENT") {
-              logger.error(
-                "Docker is not installed or not found in PATH. Please install Docker Desktop and ensure it is running."
-              );
-            } else {
-              logger.error(`Error starting Memory server: ${error.message}`);
-            }
-            return;
-          }
-          if (stderr && stderr.toLowerCase().includes("docker daemon")) {
-            logger.error(
-              "Docker daemon does not appear to be running. Please start Docker Desktop."
-            );
-            return;
-          }
-          if (stderr) {
-            logger.error(`Qdrant stderr: ${stderr}`);
-          }
-          if (stdout && stdout.trim().length > 0) {
-            logger.info(`Memory server started: ${stdout}`);
-          } else {
-            logger.error(
-              "Docker command executed but no container was started. Please check Docker status."
-            );
-          }
-        });
-      });
+    // Check if the container is already running
+    const checkResult = await execa("docker", [
+      "ps",
+      "--filter",
+      `name=${containerName}`,
+      "--filter",
+      "status=running",
+      "-q"
+    ]);
+
+    if (checkResult.stdout && checkResult.stdout.trim().length > 0) {
+      logger.info(
+        `Memory server '${containerName}' is already running. Skipping start.`
+      );
+      return;
     }
-  );
+
+    // If not running, remove any stopped container with the same name
+    try {
+      await execa("docker", ["rm", "-f", containerName]);
+    } catch (removeErr: any) {
+      if (!removeErr.message.includes("No such container")) {
+        logger.error(
+          `Error removing existing Memory server: ${removeErr.message}`
+        );
+        return;
+      }
+    }
+
+    // Start the container
+    const startResult = await execa("docker", [
+      "run",
+      "-d",
+      "--name",
+      containerName,
+      "-p",
+      "6333:6333",
+      "-p",
+      "6334:6334",
+      "-v",
+      `${storagePath}:/qdrant/storage`,
+      "qdrant/qdrant"
+    ]);
+
+    if (startResult.stderr && startResult.stderr.toLowerCase().includes("docker daemon")) {
+      logger.error(
+        "Docker daemon does not appear to be running. Please start Docker Desktop."
+      );
+      return;
+    }
+
+    if (startResult.stderr) {
+      logger.error(`Qdrant stderr: ${startResult.stderr}`);
+    }
+
+    if (startResult.stdout && startResult.stdout.trim().length > 0) {
+      logger.info(`Memory server started: ${startResult.stdout}`);
+    } else {
+      logger.error(
+        "Docker command executed but no container was started. Please check Docker status."
+      );
+    }
+
+  } catch (error: any) {
+    if (error.code === "ENOENT") {
+      logger.error(
+        "Docker is not installed or not found in PATH. Please install Docker Desktop and ensure it is running."
+      );
+    } else {
+      logger.error(`Error starting Memory server: ${error.message}`);
+    }
+  }
 }
 
 export async function stop_memory_server(): Promise<void> {
-  const { exec } = await import("child_process");
-
-  return new Promise((resolve, reject) => {
+  try {
     // First, check if the container exists and is running
-    exec(
-      `docker ps --filter "name=${containerName}" --filter "status=running" -q`,
-      (checkErr, checkStdout) => {
-        if (checkErr) {
-          logger.error(
-            `Error checking Memory server status: ${checkErr.message}`
-          );
-          reject(checkErr);
-          return;
-        }
+    const checkResult = await execa("docker", [
+      "ps",
+      "--filter",
+      `name=${containerName}`,
+      "--filter",
+      "status=running",
+      "-q"
+    ]);
 
-        if (!checkStdout || checkStdout.trim().length === 0) {
-          logger.info(
-            `Memory server '${containerName}' is not running. Nothing to stop.`
-          );
-          resolve();
-          return;
-        }
+    if (!checkResult.stdout || checkResult.stdout.trim().length === 0) {
+      logger.info(
+        `Memory server '${containerName}' is not running. Nothing to stop.`
+      );
+      return;
+    }
 
-        // Stop and remove the container
-        exec(
-          `docker stop ${containerName} && docker rm ${containerName}`,
-          (err, stdout, stderr) => {
-            if (err) {
-              // Check if the error is because container doesn't exist
-              if (err.message.includes("No such container")) {
-                logger.info(
-                  `Memory server '${containerName}' does not exist. Already cleaned up.`
-                );
-                resolve();
-                return;
-              }
-              logger.error(
-                `Error stopping/removing Memory server: ${err.message}`
-              );
-              reject(err);
-              return;
-            }
-
-            if (stderr) {
-              logger.warn(`Qdrant stop stderr: ${stderr}`);
-            }
-            // logger.info(
-            //   `Memory server '${containerName}' stopped and removed successfully.`
-            // );
-            resolve();
-          }
+    // Stop and remove the container
+    try {
+      await execa("docker", ["stop", containerName]);
+      await execa("docker", ["rm", containerName]);
+      // logger.info(
+      //   `Memory server '${containerName}' stopped and removed successfully.`
+      // );
+    } catch (err: any) {
+      // Check if the error is because container doesn't exist
+      if (err.message.includes("No such container")) {
+        logger.info(
+          `Memory server '${containerName}' does not exist. Already cleaned up.`
         );
+        return;
       }
+      logger.error(
+        `Error stopping/removing Memory server: ${err.message}`
+      );
+      throw err;
+    }
+
+  } catch (error: any) {
+    logger.error(
+      `Error checking Memory server status: ${error.message}`
     );
-  });
+    throw error;
+  }
 }
