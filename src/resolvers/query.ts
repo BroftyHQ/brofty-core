@@ -1,150 +1,25 @@
-import { AuthorizedGraphQLContext } from "../types/context.js";
-import { getPreference } from "../user_preferences/index.js";
-import { mcp_server_model, memories_model, message_model, tools_model } from "../db/sqlite/models.js";
 import { withAuth } from "./withAuth.js";
-import { getInitializedClientsInfo } from "../mcp/getMcpClient.js";
-import get_user_preferred_llm from "../functions/llm/get_user_preferred_llm.js";
-import qdrant_client from "../db/qdrant/client.js";
+import { getMessages } from "../functions/queries/getMessages.js";
+import { getPreferenceByKey } from "../functions/queries/getPreferenceByKey.js";
+import { getLocalLLMStatus } from "../functions/queries/getLocalLLMStatus.js";
+import { getAvailableMCPServers } from "../functions/queries/getAvailableMCPServers.js";
+import { getRunningMCPServers } from "../functions/queries/getRunningMCPServers.js";
+import { getAvailableTools } from "../functions/queries/getAvailableTools.js";
+import { areToolsSynced } from "../functions/queries/areToolsSynced.js";
+import { getSelectedPreferredLLM } from "../functions/queries/getSelectedPreferredLLM.js";
+import { getUserMemories } from "../functions/queries/getUserMemories.js";
 
 export const Query = {
   status: () => {
     return "Server is running";
   },
-  getMessages: withAuth(
-    async (
-      _parent: any,
-      _args: any,
-      context: AuthorizedGraphQLContext,
-      _info: any
-    ) => {
-      const messages = await message_model.findAll({
-        limit: 100,
-        order: [["created_at", "DESC"]],
-      });
-      return messages.map((message: any) => {
-        return {
-          id: message.id,
-          text: message.text,
-          by: message.by,
-          created_at: message.created_at.toString(),
-        };
-      });
-    }
-  ),
-  getPreferenceByKey: withAuth(
-    async (
-      _parent: any,
-      args: { key: string },
-      context: AuthorizedGraphQLContext,
-      _info: any
-    ) => {
-      const preference = await getPreference(args.key);
-      return preference || null;
-    }
-  ),
-  getLocalLLMStatus: withAuth(
-    async (
-      _parent: any,
-      _args: any,
-      context: AuthorizedGraphQLContext,
-      _info: any
-    ) => {
-      return {
-        is_downloading: false,
-        progress: "0",
-        error: null,
-        is_ready: false,
-      };
-    }
-  ),
-  getAvailableMCPServers: withAuth(
-    async (
-      _parent: any,
-      _args: any,
-      context: AuthorizedGraphQLContext,
-      _info: any
-    ) => {
-      return (await mcp_server_model.findAll()).map((server:any) => {
-        return {
-          name: server.name,
-          command: server.command,
-          args: server.args,
-          env: JSON.stringify(server.envs),
-          status: server.status,
-        };
-      });
-    }
-  ),
-  getRunningMCPServers: withAuth(
-    async (
-      _parent: any,
-      _args: any,
-      context: AuthorizedGraphQLContext,
-      _info: any
-    ) => {
-      const list = getInitializedClientsInfo();
-      return list.map((client) => {
-        return {
-          name: client.name,
-          running_for: client.runningForMs.toString(),
-        };
-      });
-    }
-  ),
-  getAvailableTools: withAuth(
-    async (
-      _parent: any,
-      _args: any,
-      context: AuthorizedGraphQLContext,
-      _info: any
-    ) => {
-      const tools = await tools_model.findAll({});
-      return tools;
-    }
-  ),
-  areToolsSynced: withAuth(
-    async (
-      _parent: any,
-      _args: any,
-      context: AuthorizedGraphQLContext,
-      _info: any
-    ) => {
-      // check is all tools in the database are in the qdrant collection
-      const tool_count = await tools_model.count({});
-      const qdrantTools = await qdrant_client.getCollection("tools");
-      const qdrantToolCount = qdrantTools.points_count;
-      return tool_count === qdrantToolCount;
-    }
-  ),
-  getSelectedPreferredLLM: withAuth(
-    async (
-      _parent: any,
-      _args: any,
-      context: AuthorizedGraphQLContext,
-      _info: any
-    ) => {
-      const preferredLLM = await get_user_preferred_llm();
-
-      return preferredLLM;
-    }
-  ),
-  getUserMemories: withAuth(
-    async (
-      _parent: any,
-      _args: any,
-      context: AuthorizedGraphQLContext,
-      _info: any
-    ) => {
-      const memories = await memories_model.findAll({
-        order: [["created_at", "DESC"]],
-        limit: 100,
-      });
-      return memories.map((memory: any) => ({
-        id: memory.id,
-        content: memory.content,
-        index: memory.index,
-        created_at: memory.created_at.toString(),
-      }));
-    }
-  ),
+  getMessages: withAuth(getMessages),
+  getPreferenceByKey: withAuth(getPreferenceByKey),
+  getLocalLLMStatus: withAuth(getLocalLLMStatus),
+  getAvailableMCPServers: withAuth(getAvailableMCPServers),
+  getRunningMCPServers: withAuth(getRunningMCPServers),
+  getAvailableTools: withAuth(getAvailableTools),
+  areToolsSynced: withAuth(areToolsSynced),
+  getSelectedPreferredLLM: withAuth(getSelectedPreferredLLM),
+  getUserMemories: withAuth(getUserMemories),
 };

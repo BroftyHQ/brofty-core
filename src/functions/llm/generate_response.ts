@@ -18,15 +18,17 @@ export default async function generate_response({
   recursion_count = 0,
   functions_suggestions = [],
 }: GenerateResponseParams) {
-  pubsub.publish(`MESSAGE_STREAM`, {
-    messageStream: {
-      type: "APPEND_MESSAGE",
-      id,
-      text: `\nAgent Execution Iteration ${recursion_count}\n`,
-      by: "AI",
-      created_at: initial_response_time.toString(),
-    },
-  });
+  if (recursion_count > 0) {
+    pubsub.publish(`MESSAGE_STREAM`, {
+      messageStream: {
+        type: "APPEND_MESSAGE",
+        id,
+        text: `\nAgent Execution Iteration ${recursion_count}\n`,
+        by: "AI",
+        created_at: initial_response_time.toString(),
+      },
+    });
+  }
 
   let finalText = "";
 
