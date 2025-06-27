@@ -1,10 +1,43 @@
 import { tools_model } from "../db/sqlite/models.js";
+import { Op } from "sequelize";
 
-export default async function get_openai_tool_schema() {
-  const toolsJson = await tools_model.findAll({
-    attributes: ["defination", "mcp_server"],
-  });
-
+export default async function get_openai_tool_schema({
+  names,
+}: {
+  names: string[];
+}) {
+  const toolsJson = [];
+  for await (const name of names) {
+    let toolName = name;
+    let mcp_server = null;
+    if (name.includes("___")) {
+      mcp_server = name.split("___")[0];
+      toolName = name.split("___")[1];
+    }
+    let tool_schema;
+    if (mcp_server) {
+      
+      tool_schema = await tools_model.findOne({
+        where: {
+          name: toolName,
+          mcp_server: mcp_server,
+        },
+        attributes: ["defination", "mcp_server"],
+      });
+    } else {
+      tool_schema = await tools_model.findOne({
+        where: {
+          name: toolName,
+        },
+        attributes: ["defination", "mcp_server"],
+      });
+    }
+    if (!tool_schema) {
+      console.warn(`Tool schema not found for: ${name}`);
+      continue;
+    }
+    toolsJson.push(tool_schema);
+  }
   let openaiTools = [];
   // Recursively remove any property where type is an array, and remove from required if present
   function cleanOpenAISchemaTypes(schema) {

@@ -1,15 +1,13 @@
 import get_response_stream from "./get_response_stream.js";
-import {
-  message_model,
-  message_summary_model,
-} from "../../db/sqlite/models.js";
+import { message_model } from "../../db/sqlite/models.js";
 import { DateTime } from "luxon";
 import logger from "../../common/logger.js";
 import buildMessages from "./build_messages.js";
 import { StreamProcessor } from "./stream_processor.js";
 import { executeFunctionCalls } from "./execute_function_calls.js";
-import { GenerateResponseParams } from "./types.js";
 import { manageLongTermMemory } from "../../memory/long_term_memory_manager.js";
+import { GenerateResponseParams } from "./types.js";
+import pubsub from "../../pubsub/index.js";
 
 export default async function generate_response({
   id,
@@ -18,7 +16,20 @@ export default async function generate_response({
   initial_response_time,
   tool_calls = [],
   recursion_count = 0,
+  functions_suggestions = [],
 }: GenerateResponseParams) {
+  if (recursion_count > 0) {
+    pubsub.publish(`MESSAGE_STREAM`, {
+      messageStream: {
+        type: "APPEND_MESSAGE",
+        id,
+        text: `\nAgent Execution Iteration ${recursion_count}\n`,
+        by: "AI",
+        created_at: initial_response_time.toString(),
+      },
+    });
+  }
+
   let finalText = "";
 
   if (recursion_count > 10) {
@@ -45,6 +56,7 @@ export default async function generate_response({
     id,
     user_token,
     messages,
+    functions_suggestions,
   });
 
   if (stream === null) {
@@ -65,12 +77,18 @@ export default async function generate_response({
     if (result.hasContent) {
       finalText += result.finalText;
     } else if (result.hasFunctionCalls) {
-      has_function_calls = await executeFunctionCalls(
-        streamProcessor.getFunctionCache(),
-        tool_calls,
-        id,
-        initial_response_time
-      );
+      const fn_call = await executeFunctionCalls({
+        function_cache: streamProcessor.getFunctionCache(),
+        tool_calls: tool_calls,
+        id: id,
+        initial_response_time: initial_response_time,
+        user_token: user_token,
+      });
+      has_function_calls = fn_call.has_function_calls;
+      functions_suggestions = [
+        ...functions_suggestions,
+        ...fn_call.functions_suggestions,
+      ];
       streamProcessor.clearFunctionCache();
     }
   }
@@ -84,6 +102,7 @@ export default async function generate_response({
       initial_response_time,
       tool_calls,
       recursion_count,
+      functions_suggestions,
     });
     return;
   }

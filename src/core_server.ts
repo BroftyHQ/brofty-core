@@ -11,20 +11,17 @@ import { makeExecutableSchema } from "@graphql-tools/schema";
 //@ts-ignore
 import { useServer } from "graphql-ws/use/ws";
 import { AnonymousGraphQLContext } from "./types/context.js";
-import { IS_PRODUCTION } from "./common/constants.js";
 import get_ctx_with_auth_token from "./get_ctx_with_auth_token.js";
 import { parse } from "graphql";
-import sequelize from "./db/sqlite/client.js";
 import start_streaming_system_status from "./functions/system/start_streaming_system_status.js";
 import { start_memory_server, stop_memory_server } from "./db/qdrant/start_memory_server.js";
 import check_docker from "./common/check_docker.js";
-import user_initialization from "./functions/user_initialization.js";
 import logger from "./common/logger.js";
-import { getCurrentCommitHash } from "./libs/github.js";
 import start_cron from "./cron/index.js";
 import { safeDatabaseSync } from "./db/sqlite/reconnect.js";
 import { v1Router } from "./rest/index.js";
 import { setServerInstances } from "./stop-core-server.js";
+import user_initialization from "./functions/user_initialization.js";
 
 interface MyContext {
   token?: string;
@@ -162,9 +159,8 @@ async function start_core_server() {
   await new Promise<void>((resolve) => {
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
     safeDatabaseSync().then(async () => {
-      user_initialization();
       cronJobs = await start_cron();
-      
+      user_initialization();
       // Set server instances for graceful shutdown
       setServerInstances({
         apolloServer,
