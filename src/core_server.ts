@@ -14,7 +14,10 @@ import { AnonymousGraphQLContext } from "./types/context.js";
 import get_ctx_with_auth_token from "./get_ctx_with_auth_token.js";
 import { parse } from "graphql";
 import start_streaming_system_status from "./functions/system/start_streaming_system_status.js";
-import { start_memory_server, stop_memory_server } from "./db/qdrant/start_memory_server.js";
+import {
+  start_memory_server,
+  stop_memory_server,
+} from "./db/qdrant/start_memory_server.js";
 import check_docker from "./common/check_docker.js";
 import logger from "./common/logger.js";
 import start_cron from "./cron/index.js";
@@ -132,7 +135,8 @@ async function start_core_server() {
         callback(null, false);
         return;
       }
-    },  });
+    },
+  });
   // Mount REST routes
   app.use("/rest/v1", corsConfig, v1Router);
 
@@ -154,23 +158,30 @@ async function start_core_server() {
         const token = req.headers.authorization || "";
         return await get_ctx_with_auth_token(token);
       },
-    })  );  
+    })
+  );
+  // wait 5 seconds before starting the server
+  // for memory server to be ready
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+
   // Modified server startup
   await new Promise<void>((resolve) => {
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
-    safeDatabaseSync().then(async () => {
-      cronJobs = await start_cron();
-      user_initialization();
-      // Set server instances for graceful shutdown
-      setServerInstances({
-        apolloServer,
-        cronJobs,
-        httpServer,
-        serverCleanup
+    safeDatabaseSync()
+      .then(async () => {
+        cronJobs = await start_cron();
+        user_initialization();
+        // Set server instances for graceful shutdown
+        setServerInstances({
+          apolloServer,
+          cronJobs,
+          httpServer,
+          serverCleanup,
+        });
+      })
+      .catch((error) => {
+        logger.error("Database sync failed:", error);
       });
-    }).catch((error) => {
-      logger.error("Database sync failed:", error);
-    });
   });
   logger.info(`🚀 Brofty Core Server ready!!!`);
 }
