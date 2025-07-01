@@ -33,6 +33,15 @@ export default async function generate_response({
   let finalText = "";
 
   if (recursion_count > 10) {
+    pubsub.publish(`MESSAGE_STREAM`, {
+      messageStream: {
+        type: "COMPLETE_MESSAGE",
+        id,
+        text: `Recursion limit exceeded. Skipping further processing`,
+        by: "AI",
+        created_at: DateTime.now().toMillis(),
+      },
+    });
     await message_model.update(
       {
         text: `Skipped - exceeded max recursion calls`,
