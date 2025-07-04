@@ -4,18 +4,20 @@ import get_stm from "../../memory/get_stm.js";
 import { Message, ToolCall } from "./types.js";
 
 export default async function buildMessages({
-  messsage,
+  user_query,
+  user_messages,
   tool_calls = [],
   user_token,
 }: {
-  messsage: string;
+  user_query: string;
+  user_messages: Message[];
   tool_calls: ToolCall[];
   user_token: string;
 }): Promise<Message[]> {
   const current_stm = await get_stm();
   const medium_term_memory = await get_mtm();
   const long_term_memory = await get_ltm({
-    query: messsage,
+    query: user_query,
     user_token,
   });
 
@@ -37,10 +39,7 @@ export default async function buildMessages({
     ...long_term_memory,
     ...medium_term_memory,
     ...current_stm,
-    {
-      role: "user",
-      content: messsage,
-    },
+    ...user_messages,
   ];
 
   if (tool_calls.length > 0) {

@@ -5,6 +5,7 @@ import pubsub from "../../pubsub/index.js";
 import get_openai_tool_schema from "../../tools/get_openai_tool_schema.js";
 import logger from "../../common/logger.js";
 import get_user_preferred_llm from "./get_user_preferred_llm.js";
+import { Message } from "./types.js";
 
 export default async function get_response_stream({
   id,
@@ -14,11 +15,7 @@ export default async function get_response_stream({
 }: {
   id: string;
   user_token: string;
-  messages: {
-    role: "user" | "assistant" | "system" | "tool";
-    tool_call_id?: string; // Optional, only for tool messages
-    content: string;
-  }[];
+  messages: Message[];
   functions_suggestions?: string[];
 }) {
   const client = await getOpenAIClient(user_token);

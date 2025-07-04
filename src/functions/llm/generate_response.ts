@@ -12,7 +12,8 @@ import pubsub from "../../pubsub/index.js";
 export default async function generate_response({
   id,
   user_token,
-  messsage,
+  user_query,
+  user_messages,
   initial_response_time,
   tool_calls = [],
   recursion_count = 0,
@@ -58,7 +59,7 @@ export default async function generate_response({
   recursion_count++;
 
   // Build messages for the LLM
-  const messages = await buildMessages({ messsage, tool_calls, user_token });
+  const messages = await buildMessages({ user_query, user_messages, tool_calls, user_token });
 
   // Get response stream
   const stream = await get_response_stream({
@@ -107,7 +108,8 @@ export default async function generate_response({
     generate_response({
       id,
       user_token,
-      messsage,
+      user_query,
+      user_messages,
       initial_response_time,
       tool_calls,
       recursion_count,

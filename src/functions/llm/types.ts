@@ -22,13 +22,20 @@ export type Message = {
       arguments: string;
     };
   }[];
-  content: string;
+  content:
+    | string
+    | {
+        type: string;
+        text?: string;
+        image_url?: string;
+      };
 };
 
 export type GenerateResponseParams = {
   id: string;
   user_token: string;
-  messsage: string;
+  user_query: string;
+  user_messages: Message[];
   initial_response_time: string;
   tool_calls?: ToolCall[];
   recursion_count?: number;
