@@ -62,6 +62,7 @@ export default async function generate_response({
   const messages = await buildMessages({ user_query, user_message, tool_calls, user_token });
 
   // console.log(messages);
+  // console.log(messages[messages.length - 1].content);
   
   // Get response stream
   const stream = await get_response_stream({
