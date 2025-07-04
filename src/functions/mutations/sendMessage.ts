@@ -62,7 +62,7 @@ export async function sendMessage(
       });
 
       if (response && response.type) {
-        user_message.content.push(response);
+        (user_message.content as ContentBlock[]).push(response);
       } else {
         throw new Error(
           `Failed to process file: ${file.filename} (missing required 'type' property)`
@@ -82,11 +82,11 @@ export async function sendMessage(
   const fileReferences =
     processedFiles.length > 0
       ? processedFiles.map((file) => ({
-          filename: file.filename,
+          filename: file.sanitizedFilename,
           size: file.size,
           mimetype: file.mimetype,
           encoding: file.encoding,
-          path: `/resources/input/${user_message_id}/${file.filename}`,
+          path: `/resources/input/${user_message_id}/${file.sanitizedFilename}`,
         }))
       : null;
 
@@ -106,6 +106,14 @@ export async function sendMessage(
       by: "You",
       id: message.id,
       text: message.text,
+      files: fileReferences
+        ? fileReferences.map((file) => ({
+            filename: file.filename,
+            mimetype: file.mimetype,
+            path: file.path,
+            size: file.size,
+          }))
+        : [],
       created_at: message.created_at.toString(),
     },
   });
@@ -140,7 +148,9 @@ export async function sendMessage(
   });
 
   return {
-    ...message,
+    id: message.id,
+    text: message.text,
+    by: message.by,
     files: fileReferences
       ? fileReferences.map((file) => ({
           filename: file.filename,
@@ -149,5 +159,6 @@ export async function sendMessage(
           size: file.size,
         }))
       : [],
+    created_at: message.created_at.toString(),
   };
 }

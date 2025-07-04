@@ -40,7 +40,8 @@ type PartialMessage {
   id: ID!
   text: String!
   by: String!
-  created_at: String
+  files: [MessageFile]
+  created_at: String!
 }
 
 type SystemStatus {

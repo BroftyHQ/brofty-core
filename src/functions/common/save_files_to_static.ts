@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import logger from "../../common/logger.js";
 import { ProcessedFile } from "../../common/file-utils.js";
+import { DateTime } from "luxon";
 
 const STATIC_INPUT_DIR = path.join(process.cwd(), "static", "input");
 
@@ -29,13 +30,7 @@ export async function saveFilesToStaticInput(
     const savedPaths: string[] = [];
 
     for (const file of files) {
-      // Generate a safe filename (preserve original name but avoid conflicts)
-      const timestamp = Date.now();
-      const ext = path.extname(file.filename);
-      const baseName = path.basename(file.filename, ext);
-      const safeFilename = `${baseName}_${timestamp}${ext}`;
-
-      const filePath = path.join(messageDir, safeFilename);
+      const filePath = path.join(messageDir, file.sanitizedFilename);
 
       // Write the file buffer to disk
       await fs.promises.writeFile(filePath, file.buffer);
@@ -43,7 +38,7 @@ export async function saveFilesToStaticInput(
       savedPaths.push(filePath);
 
       logger.info(
-        `Saved file: ${file.filename} -> ${path.relative(process.cwd(), filePath)} (${file.size} bytes)`
+        `Saved file: ${file.sanitizedFilename} -> ${path.relative(process.cwd(), filePath)} (${file.size} bytes)`
       );
     }
 

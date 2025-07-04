@@ -1,4 +1,26 @@
 import { FileUpload } from "graphql-upload/processRequest.mjs";
+import { DateTime } from "luxon";
+
+/**
+ * File utilities for handling file uploads with URL-safe filename sanitization.
+ * 
+ * Features:
+ * - Validates file types, sizes, and content
+ * - Automatically sanitizes filenames to be URL-friendly
+ * - Preserves original filenames for reference
+ * - Provides both conservative and permissive sanitization options
+ * 
+ * Example usage:
+ * ```typescript
+ * const { files, errors } = await validateAndProcessFiles(uploads);
+ * 
+ * files.forEach(file => {
+ *   console.log('Original:', file.originalFilename);     // "My File (1).txt"
+ *   console.log('Sanitized:', file.sanitizedFilename);   // "My_File_1_1735830400000.txt"
+ *   console.log('URL-safe:', file.filename);             // "My_File_1_1735830400000.txt"
+ * });
+ * ```
+ */
 
 // File validation constants
 export const FILE_VALIDATION_CONFIG = {
@@ -94,6 +116,8 @@ export interface FileValidationError {
 export interface ProcessedFile {
   file: FileUpload;
   filename: string;
+  originalFilename: string;
+  sanitizedFilename: string;
   mimetype: string;
   size: number;
   buffer: Buffer;
@@ -191,9 +215,12 @@ export async function validateAndProcessFiles(
       }
 
       // If all validations pass, add to processed files
+      const sanitizedFilename = sanitizeFilenameForUrl(filename);
       processedFiles.push({
         file: fileUpload,
-        filename,
+        filename: sanitizedFilename,
+        originalFilename: filename,
+        sanitizedFilename,
         mimetype: finalMimetype, // Use the final determined MIME type
         size: fileSize,
         buffer,
@@ -229,6 +256,57 @@ export function getFileExtension(filename: string): string {
 export function getFileTypeFromExtension(filename: string): string | null {
   const extension = getFileExtension(filename);
   return EXTENSION_TO_MIME[extension] || null;
+}
+
+// Sanitize filename to be URL-safe by removing/replacing problematic characters
+export function sanitizeFilenameForUrl(filename: string): string {
+  // Basic cleanup for better readability while maintaining URL safety
+  const cleanedFilename = filename
+    // Replace multiple spaces with single space
+    .replace(/\s+/g, " ")
+    // Trim whitespace
+    .trim()
+    // Ensure it's not empty
+    || "file";
+
+  // Add timestamp to make filename unique
+  const timestamp = DateTime.now().toMillis().toString();
+  const extension = getFileExtension(cleanedFilename);
+  const nameWithoutExtension = extension 
+    ? cleanedFilename.substring(0, cleanedFilename.lastIndexOf('.'))
+    : cleanedFilename;
+  
+  const uniqueFilename = extension 
+    ? `${nameWithoutExtension}_${timestamp}.${extension}`
+    : `${nameWithoutExtension}_${timestamp}`;
+
+  // Manually sanitize filename for URL safety
+  return uniqueFilename
+    .replace(/[<>:"/\\|?*]/g, '_') // Replace invalid file system characters
+    .replace(/\s/g, '_') // Replace spaces with underscores
+    .replace(/[^\w\-_.]/g, '_') // Replace any other non-alphanumeric characters (except dash, underscore, dot)
+    .replace(/_{2,}/g, '_') // Replace multiple consecutive underscores with single underscore
+    .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+}
+
+// Alias for makeFilenameUrlSafe - both functions now do the same thing
+export function makeFilenameUrlSafe(filename: string): string {
+  return sanitizeFilenameForUrl(filename);
+}
+
+// Helper function to URL encode a filename if needed
+export function encodeFilenameForUrl(filename: string): string {
+  return filename
+    .replace(/[<>:"/\\|?*]/g, '_') // Replace invalid file system characters
+    .replace(/\s/g, '_') // Replace spaces with underscores
+    .replace(/[^\w\-_.]/g, '_') // Replace any other non-alphanumeric characters
+    .replace(/_{2,}/g, '_') // Replace multiple consecutive underscores with single underscore
+    .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+}
+
+// Get a URL-safe filename that can be used in URLs without encoding
+export function getUrlSafeFilename(filename: string): string {
+  return sanitizeFilenameForUrl(filename);
 }
 
 // File type detection
@@ -323,6 +401,8 @@ export function extractTextFromProcessedFile(
 
 export function getFileInfo(file: ProcessedFile): {
   filename: string;
+  originalFilename: string;
+  sanitizedFilename: string;
   mimetype: string;
   size: string;
   category: "image" | "text" | "unknown";
@@ -331,6 +411,8 @@ export function getFileInfo(file: ProcessedFile): {
 } {
   return {
     filename: file.filename,
+    originalFilename: file.originalFilename,
+    sanitizedFilename: file.sanitizedFilename,
     mimetype: file.mimetype,
     size: formatFileSize(file.size),
     category: getFileTypeCategory(file.mimetype),

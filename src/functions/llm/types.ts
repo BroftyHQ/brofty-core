@@ -28,7 +28,7 @@ export type Message = {
       arguments: string;
     };
   }[];
-  content: ContentBlock[];
+  content: string | ContentBlock[];
 };
 
 export type GenerateResponseParams = {
