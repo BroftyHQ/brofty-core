@@ -1,6 +1,6 @@
 const mutations = `
 type Mutation {
-  sendMessage(message: String!): Message
+  sendMessage(message: String!, files: [Upload!]): Message
   setPreference(key: String!, value: String!): String
   addMCPServer(name: String!, command: String!, args: [String], env: String): MCPServer
   syncMCPServerTools(name: String!): Boolean!

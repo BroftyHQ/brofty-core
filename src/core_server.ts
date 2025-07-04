@@ -25,6 +25,9 @@ import { safeDatabaseSync } from "./db/sqlite/reconnect.js";
 import { v1Router } from "./rest/index.js";
 import { setServerInstances } from "./stop-core-server.js";
 import user_initialization from "./functions/user_initialization.js";
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
+import { FILE_VALIDATION_CONFIG } from "./common/file-utils.js";
+import { fileUploadErrorHandler } from "./common/upload-error-handler.js";
 
 interface MyContext {
   token?: string;
@@ -97,6 +100,8 @@ async function start_core_server() {
   // for our httpServer.
   apolloServer = new ApolloServer<MyContext>({
     schema,
+    // Disable CSRF prevention temporarily for debugging
+    csrfPrevention: false,
     plugins: [
       // Proper shutdown for the HTTP server.
       ApolloServerPluginDrainHttpServer({ httpServer }),
@@ -145,12 +150,29 @@ async function start_core_server() {
   app.use(
     "/v1",
     corsConfig,
-    express.json(),
+    // Handle multipart/form-data uploads with error handling
+    (req: any, res: any, next: any) => {
+      graphqlUploadExpress({ 
+        maxFileSize: FILE_VALIDATION_CONFIG.MAX_FILE_SIZE, 
+        maxFiles: FILE_VALIDATION_CONFIG.MAX_FILES 
+      })(req, res, (error: any) => {
+        if (error) {
+          fileUploadErrorHandler(error, req, res, next);
+        } else {
+          next();
+        }
+      });
+    },
+    express.json({ limit: FILE_VALIDATION_CONFIG.MAX_FILE_SIZE }),
     // expressMiddleware accepts the same arguments:
     // an Apollo Server instance and optional configuration options
     expressMiddleware(apolloServer as any, {
       context: async ({ req }: { req: any }) => {
         const contextIfNotAuthorized: AnonymousGraphQLContext = {};
+
+        if (req.body === undefined || req.body.operationName === undefined) {
+          return contextIfNotAuthorized;
+        }
 
         if (req.body.operationName === "IntrospectionQuery") {
           return contextIfNotAuthorized;

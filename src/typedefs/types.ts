@@ -1,4 +1,6 @@
 const types = `
+scalar Upload
+
 type Message {
   id: ID!
   text: String!
@@ -56,6 +58,16 @@ type UserMemory {
   content: String!
   index: String!
   created_at: String!
+}
+
+type File {
+  id: ID!
+  filename: String!
+  mimetype: String!
+  encoding: String!
+  size: Int!
+  createdAt: String!
+  updatedAt: String!
 }
 `;
 export default types;
