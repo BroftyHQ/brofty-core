@@ -25,9 +25,10 @@ import { safeDatabaseSync } from "./db/sqlite/reconnect.js";
 import { v1Router } from "./rest/index.js";
 import { setServerInstances } from "./stop-core-server.js";
 import user_initialization from "./functions/user_initialization.js";
-import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
+import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 import { FILE_VALIDATION_CONFIG } from "./common/file-utils.js";
 import { fileUploadErrorHandler } from "./common/upload-error-handler.js";
+import path from "path";
 
 interface MyContext {
   token?: string;
@@ -92,6 +93,9 @@ const serverCleanup = useServer(
   wsServer
 );
 
+// set static directory for serving static files
+app.use("/resources", express.static(path.join(process.cwd(), "static")));
+
 async function start_core_server() {
   // check docker is running
   await check_docker();
@@ -152,9 +156,9 @@ async function start_core_server() {
     corsConfig,
     // Handle multipart/form-data uploads with error handling
     (req: any, res: any, next: any) => {
-      graphqlUploadExpress({ 
-        maxFileSize: FILE_VALIDATION_CONFIG.MAX_FILE_SIZE, 
-        maxFiles: FILE_VALIDATION_CONFIG.MAX_FILES 
+      graphqlUploadExpress({
+        maxFileSize: FILE_VALIDATION_CONFIG.MAX_FILE_SIZE,
+        maxFiles: FILE_VALIDATION_CONFIG.MAX_FILES,
       })(req, res, (error: any) => {
         if (error) {
           fileUploadErrorHandler(error, req, res, next);

@@ -14,3 +14,7 @@ yarn-error.log
 
 # qdrant storage
 qdrant_storage
+
+# ignore all files in the static directory
+static/input
+static/output

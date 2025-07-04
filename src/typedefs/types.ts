@@ -5,7 +5,15 @@ type Message {
   id: ID!
   text: String!
   by: String!
+  files: [MessageFile]
   created_at: String!
+}
+
+type MessageFile {
+  filename: String!
+  mimetype: String!
+  path: String!
+  size: Int!
 }
 
 type LocalLLMStatus {

@@ -16,6 +16,7 @@ export async function getMessages(
       id: message.id,
       text: message.text,
       by: message.by,
+      files: message.files,
       created_at: message.created_at.toString(),
     };
   });

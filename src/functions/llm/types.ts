@@ -11,7 +11,13 @@ export type ToolCall = {
   name: string;
   arguments: string;
 };
-
+export type ContentBlock = {
+  type: "text" | "image_url";
+  text?: string;
+  image_url?: {
+    url: string;
+  };
+};
 export type Message = {
   role: "system" | "user" | "assistant" | "tool";
   tool_call_id?: string;
@@ -22,20 +28,14 @@ export type Message = {
       arguments: string;
     };
   }[];
-  content:
-    | string
-    | {
-        type: string;
-        text?: string;
-        image_url?: string;
-      };
+  content: ContentBlock[];
 };
 
 export type GenerateResponseParams = {
   id: string;
   user_token: string;
   user_query: string;
-  user_messages: Message[];
+  user_message: Message;
   initial_response_time: string;
   tool_calls?: ToolCall[];
   recursion_count?: number;

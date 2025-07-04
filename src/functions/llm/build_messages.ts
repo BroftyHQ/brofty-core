@@ -5,12 +5,12 @@ import { Message, ToolCall } from "./types.js";
 
 export default async function buildMessages({
   user_query,
-  user_messages,
+  user_message,
   tool_calls = [],
   user_token,
 }: {
   user_query: string;
-  user_messages: Message[];
+  user_message: Message;
   tool_calls: ToolCall[];
   user_token: string;
 }): Promise<Message[]> {
@@ -39,7 +39,7 @@ export default async function buildMessages({
     ...long_term_memory,
     ...medium_term_memory,
     ...current_stm,
-    ...user_messages,
+    user_message,
   ];
 
   if (tool_calls.length > 0) {

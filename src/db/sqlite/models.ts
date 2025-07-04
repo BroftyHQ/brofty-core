@@ -22,6 +22,10 @@ const message_model = sequelize.define("Message", {
     type: DataTypes.BIGINT,
     allowNull: false,
   },
+  files: {
+    type: DataTypes.JSON,
+    allowNull: true,
+  },
 });
 
 const user_preference_model = sequelize.define("UserPreference", {

@@ -13,7 +13,7 @@ export default async function generate_response({
   id,
   user_token,
   user_query,
-  user_messages,
+  user_message,
   initial_response_time,
   tool_calls = [],
   recursion_count = 0,
@@ -59,8 +59,10 @@ export default async function generate_response({
   recursion_count++;
 
   // Build messages for the LLM
-  const messages = await buildMessages({ user_query, user_messages, tool_calls, user_token });
+  const messages = await buildMessages({ user_query, user_message, tool_calls, user_token });
 
+  // console.log(messages);
+  
   // Get response stream
   const stream = await get_response_stream({
     id,
@@ -109,7 +111,7 @@ export default async function generate_response({
       id,
       user_token,
       user_query,
-      user_messages,
+      user_message,
       initial_response_time,
       tool_calls,
       recursion_count,
