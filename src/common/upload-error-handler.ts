@@ -37,7 +37,6 @@ export const fileUploadErrorHandler = (error: any, req: Request, res: Response, 
         message: 'Unsupported file type. Please upload supported file types.',
         extensions: {
           code: 'UNSUPPORTED_FILE_TYPE',
-          supportedTypes: FILE_VALIDATION_CONFIG.SUPPORTED_MIME_TYPES
         }
       }]
     });
