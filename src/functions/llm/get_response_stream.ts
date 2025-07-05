@@ -12,19 +12,22 @@ export default async function get_response_stream({
   user_token,
   messages,
   functions_suggestions,
+  enable_web_search,
 }: {
   id: string;
   user_token: string;
   messages: Message[];
   functions_suggestions?: string[];
+  enable_web_search?: boolean;
 }) {
   const client = await getOpenAIClient(user_token);
   const tools = await get_openai_tool_schema({
     names: functions_suggestions,
   });
+  const model = await get_user_preferred_llm();
   try {
     return await client.chat.completions.create({
-      model: await get_user_preferred_llm(),
+      model: enable_web_search ? `${model}:online` : `${model}`,
       tools: tools,
       tool_choice: "auto",
       // @ts-ignore

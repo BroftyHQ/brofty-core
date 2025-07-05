@@ -17,7 +17,7 @@ import { saveFilesWithErrorHandling } from "../common/save_files_to_static.js";
 
 export async function sendMessage(
   _parent: any,
-  args: { message: string; files?: FileUpload[] },
+  args: { message: string; files?: FileUpload[], webSearch?: boolean },
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
@@ -145,6 +145,7 @@ export async function sendMessage(
     tool_calls: [],
     recursion_count: 0,
     functions_suggestions: ["tool_search"],
+    enable_web_search: args.webSearch || false,
   });
 
   return {

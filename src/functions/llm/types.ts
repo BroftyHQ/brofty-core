@@ -40,4 +40,5 @@ export type GenerateResponseParams = {
   tool_calls?: ToolCall[];
   recursion_count?: number;
   functions_suggestions?: string[];
+  enable_web_search?: boolean;
 };

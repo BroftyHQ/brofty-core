@@ -18,6 +18,7 @@ export default async function generate_response({
   tool_calls = [],
   recursion_count = 0,
   functions_suggestions = [],
+  enable_web_search = false,
 }: GenerateResponseParams) {
   if (recursion_count > 0) {
     pubsub.publish(`MESSAGE_STREAM`, {
@@ -59,17 +60,23 @@ export default async function generate_response({
   recursion_count++;
 
   // Build messages for the LLM
-  const messages = await buildMessages({ user_query, user_message, tool_calls, user_token });
+  const messages = await buildMessages({
+    user_query,
+    user_message,
+    tool_calls,
+    user_token,
+  });
 
   // console.log(messages);
   // console.log(messages[messages.length - 1].content);
-  
+
   // Get response stream
   const stream = await get_response_stream({
     id,
     user_token,
     messages,
     functions_suggestions,
+    enable_web_search,
   });
 
   if (stream === null) {
