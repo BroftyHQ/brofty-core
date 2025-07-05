@@ -1,0 +1,52 @@
+name: Compile Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'yarn'
+        
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+      
+    - name: Check TypeScript compilation
+      run: yarn compile
+      
+    - name: Check compiled output exists
+      run: |
+        if [ ! -d "electron/server" ]; then
+          echo "❌ Compiled output directory 'electron/server' does not exist"
+          exit 1
+        fi
+        echo "✅ Compiled output directory exists"
+        
+    - name: List compiled files
+      run: |
+        echo "📁 Compiled files:"
+        find electron/server -name "*.js" -type f | head -20
+        
+    - name: Verify main entry point exists
+      run: |
+        if [ ! -f "electron/server/index.js" ]; then
+          echo "❌ Main entry point 'electron/server/index.js' does not exist"
+          exit 1
+        fi
+        echo "✅ Main entry point exists"
