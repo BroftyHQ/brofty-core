@@ -2,6 +2,8 @@ import { AuthorizedGraphQLContext } from "../../types/context.js";
 import { message_model } from "../../db/sqlite/models.js";
 import { Op } from "sequelize";
 
+const MAX_MESSAGES = 25;
+
 export async function getMessages(
   _parent: any,
   _args: { cursor?: string },
@@ -17,11 +19,11 @@ export async function getMessages(
         },
       },
       order: [["created_at", "DESC"]],
-      limit: 100,
+      limit: MAX_MESSAGES,
     });
   } else {
     messages = await message_model.findAll({
-      limit: 100,
+      limit: MAX_MESSAGES,
       order: [["created_at", "DESC"]],
     });
   }
