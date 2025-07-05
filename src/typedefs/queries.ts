@@ -1,7 +1,7 @@
 const queries = `
 type Query {
   status: String!
-  getMessages: [Message]
+  getMessages(cursor: String): [Message]
   getPreferenceByKey(key: String!): String
   getLocalLLMStatus: LocalLLMStatus!
 

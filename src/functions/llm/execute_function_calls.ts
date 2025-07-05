@@ -45,7 +45,10 @@ export async function executeFunctionCalls({
     const scopedFunctionName = functionName.split("___")[1];
     let function_result = "";
 
-    if (!scopedFunctionName) {
+    if (
+      scopedFunctionName === undefined ||
+      scopedFunctionName === ""
+    ) {
       console.warn(
         `Function '${functionName}' is not recognized or not available in toolMap.`
       );

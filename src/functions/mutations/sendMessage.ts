@@ -103,7 +103,7 @@ export async function sendMessage(
   pubsub.publish(`MESSAGE_STREAM`, {
     messageStream: {
       type: "NEW_MESSAGE",
-      by: "You",
+      by: "User",
       id: message.id,
       text: message.text,
       files: fileReferences

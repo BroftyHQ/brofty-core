@@ -25,7 +25,7 @@ export default async function generate_response({
       messageStream: {
         type: "APPEND_MESSAGE",
         id,
-        text: `\nAgent Execution Iteration ${recursion_count}\n`,
+        text: `\n\`Agent Execution Iteration ${recursion_count}\`\n`,
         by: "AI",
         created_at: initial_response_time.toString(),
       },
