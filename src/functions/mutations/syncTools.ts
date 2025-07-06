@@ -1,6 +1,7 @@
 import logger from "../../common/logger.js";
 import qdrant_client from "../../db/qdrant/client.js";
 import { mcp_server_model, tools_model } from "../../db/sqlite/models.js";
+import create_embeddings from "../../llms/create_embeddigs.js";
 import getOpenAIClient from "../../llms/openai.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 
@@ -10,8 +11,6 @@ export async function syncTools(
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
-  const openaiClient = await getOpenAIClient(context.user.token);
-
   const tools: any = await tools_model.findAll();
 
   for await (const tool of tools) {
@@ -30,9 +29,9 @@ export async function syncTools(
     }
 
     const embedding_input = `${mcp_description}\n${tool.description}`;
-    const res: any = await openaiClient.embeddings.create({
-      model: "text-embedding-ada-002",
-      input: embedding_input,
+    const res = await create_embeddings({
+      user_token: context.user.token,
+      embedding_input,
     });
     if (!res || !res.embedding) {
       logger.error(

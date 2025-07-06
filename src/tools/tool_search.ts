@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import qdrant_client from "../db/qdrant/client.js";
 import getOpenAIClient from "../llms/openai.js";
+import create_embeddings from "../llms/create_embeddigs.js";
 
 export default async function tool_search({
   user_token,
@@ -9,10 +10,9 @@ export default async function tool_search({
   user_token: string;
   query: string;
 }) {
-  const openaiClient = await getOpenAIClient(user_token);
-  const response: any = await openaiClient.embeddings.create({
-    model: "text-embedding-ada-002",
-    input: query,
+  const response: any = await create_embeddings({
+    user_token,
+    embedding_input: query,
   });
   if (!response || !response.embedding) {
     throw new Error("Failed to generate embedding for the query.");
