@@ -8,7 +8,9 @@ export default async function create_embeddings({
 }: {
   user_token: string;
   embedding_input: string;
-}) {
+}): Promise<{
+  embedding: number[];
+}> {
   const openaiClient = await getOpenAIClient(user_token);
 
   // strip the input to the maximum length
@@ -17,7 +19,7 @@ export default async function create_embeddings({
   }
 
   const res: any = await openaiClient.embeddings.create({
-    model: "text-embedding-ada-002",
+    model: "brofty-001",
     input: embedding_input,
   });
   return res;
