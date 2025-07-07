@@ -25,6 +25,7 @@ type LocalLLMStatus {
 
 type MCPServer {
   name: String!
+  description: String
   command: String!
   args: [String]
   env: String

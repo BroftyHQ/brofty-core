@@ -10,6 +10,7 @@ export async function getAvailableMCPServers(
   return (await mcp_server_model.findAll()).map((server: any) => {
     return {
       name: server.name,
+      description: server.description,
       command: server.command,
       args: server.args,
       env: JSON.stringify(server.envs),

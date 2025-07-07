@@ -2,7 +2,6 @@ import logger from "../../common/logger.js";
 import qdrant_client from "../../db/qdrant/client.js";
 import { mcp_server_model, tools_model } from "../../db/sqlite/models.js";
 import create_embeddings from "../../llms/create_embeddigs.js";
-import getOpenAIClient from "../../llms/openai.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 
 export async function syncTools(
@@ -11,6 +10,12 @@ export async function syncTools(
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
+  // remove all tools from Qdrant
+  await qdrant_client.delete("tools", {
+    wait: true,
+    filter: {},
+  });
+
   const tools: any = await tools_model.findAll();
 
   for await (const tool of tools) {
@@ -28,7 +33,9 @@ export async function syncTools(
       }
     }
 
-    const embedding_input = `${mcp_description}\n${tool.description}`;
+    const embedding_input = `${mcp_server}\n${tool.description}${
+      mcp_description ? `\n This tool is from ${mcp_description}` : ""
+    }`;
     const res = await create_embeddings({
       user_token: context.user.token,
       embedding_input,
@@ -50,6 +57,7 @@ export async function syncTools(
             vector: res.embedding,
             payload: {
               name: `${mcp_server}___${tool.name}`,
+              mcp_server,
               embedding_input,
             },
           },

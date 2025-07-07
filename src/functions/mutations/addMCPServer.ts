@@ -5,10 +5,21 @@ import { AuthorizedGraphQLContext } from "../../types/context.js";
 
 export async function addMCPServer(
   _parent: any,
-  args: { name: string; command: string; args?: string[]; env?: string },
+  args: { name: string; command: string; args?: string[]; env?: string, description?: string },
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
+  // if description is provided, ensure it is not longer than 200 characters
+  if (args.description && args.description.length > 200) {
+    throw new Error("Description must be 200 characters or less");
+  }
+
+  // do not support spaces in name replace them with hyphens
+  if (args.name.includes(" ")) {
+    logger.warn("MCP Server name contains spaces, replacing with hyphens");
+    args.name = args.name.replace(/\s+/g, "-");
+  }
+
   // if args.env is a string, parse it as JSON and validate it as valid key value pairs
   let envArray: string[] = [];
   if (typeof args.env === "string") {
@@ -32,6 +43,7 @@ export async function addMCPServer(
       where: { name: args.name },
       defaults: {
         name: args.name,
+        description: args.description,
         command: args.command,
         args: args.args || [],
         envs: args.env ? JSON.parse(args.env) : {},
@@ -50,6 +62,7 @@ export async function addMCPServer(
 
   return {
     name: args.name,
+    description: args.description,
     command: args.command,
     args: args.args || [],
     env: envArray.toString(),
