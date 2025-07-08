@@ -131,6 +131,41 @@ const memories_model = sequelize.define("Memories", {
   },
 });
 
+const files_model = sequelize.define("File", {
+  path: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+  },
+  type: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  message_id: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  filename: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  size: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+  },
+  mimetype: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  encoding: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  created_at: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+  },
+});
+
 export {
   message_model,
   user_preference_model,
@@ -138,4 +173,5 @@ export {
   mcp_server_model,
   message_summary_model,
   memories_model,
+  files_model,
 };

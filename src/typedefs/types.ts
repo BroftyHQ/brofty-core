@@ -14,6 +14,7 @@ type MessageFile {
   mimetype: String!
   path: String!
   size: Int!
+  created_at: String!
 }
 
 type LocalLLMStatus {

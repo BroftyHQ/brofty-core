@@ -8,6 +8,7 @@ import { getAvailableTools } from "../functions/queries/getAvailableTools.js";
 import { areToolsSynced } from "../functions/queries/areToolsSynced.js";
 import { getSelectedPreferredLLM } from "../functions/queries/getSelectedPreferredLLM.js";
 import { getUserMemories } from "../functions/queries/getUserMemories.js";
+import { getFiles } from "../functions/queries/getFiles.js";
 
 export const Query = {
   status: () => {
@@ -22,4 +23,5 @@ export const Query = {
   areToolsSynced: withAuth(areToolsSynced),
   getSelectedPreferredLLM: withAuth(getSelectedPreferredLLM),
   getUserMemories: withAuth(getUserMemories),
+  getFiles: withAuth(getFiles),
 };
