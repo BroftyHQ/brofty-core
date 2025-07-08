@@ -21,16 +21,19 @@ export async function sendMessage(
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
-  const user_query = args.message.trim();
+  let user_query = args.message.trim();
+
   if (user_query === "") {
     throw new Error("Message cannot be empty");
   }
+
+
   let user_message: Message = {
     role: "user",
     content: [
       {
         type: "text",
-        text: user_query,
+        text: `${user_query}\nUse tools if necessary to answer the question.`,
       },
     ],
   };

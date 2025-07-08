@@ -13,6 +13,7 @@ type Query {
   getSelectedPreferredLLM: String
 
   getUserMemories: [UserMemory]
+  getFiles(cursor: String): [MessageFile]
 }
 `;
 export default queries;

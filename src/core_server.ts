@@ -13,7 +13,7 @@ import { useServer } from "graphql-ws/use/ws";
 import { AnonymousGraphQLContext } from "./types/context.js";
 import get_ctx_with_auth_token from "./get_ctx_with_auth_token.js";
 import { parse } from "graphql";
-import start_streaming_system_status from "./functions/system/start_streaming_system_status.js";
+import start_streaming_system_status, { cleanup_system_status_on_disconnect } from "./functions/system/start_streaming_system_status.js";
 import {
   start_memory_server,
   stop_memory_server,
@@ -74,6 +74,15 @@ const serverCleanup = useServer(
         return true;
       } else {
         return false;
+      }
+    },
+    onDisconnect: async (ctx) => {
+      // Clean up system status streaming when user disconnects
+      const context: any = await get_ctx_with_auth_token(
+        (ctx.connectionParams.authorization as string) || ""
+      );
+      if (context.user && context.user.token) {
+        cleanup_system_status_on_disconnect(context.user.token);
       }
     },
     onSubscribe: async (ctx, id, payload) => {

@@ -1,6 +1,7 @@
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 import { message_model } from "../../db/sqlite/models.js";
 import { Op } from "sequelize";
+import authorized_user_initialization from "../authorized_user_initialization.js";
 
 const MAX_MESSAGES = 25;
 
@@ -26,6 +27,14 @@ export async function getMessages(
       limit: MAX_MESSAGES,
       order: [["created_at", "DESC"]],
     });
+
+    if (messages.length === 0) {
+      // this might be the first request from user
+      // check user intialization
+      authorized_user_initialization({
+        user_token: context.user.token,
+      });
+    }
   }
   return messages.map((message: any) => {
     return {
