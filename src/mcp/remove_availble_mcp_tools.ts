@@ -1,10 +1,12 @@
 import logger from "../common/logger.js";
+import getPrisma from "../db/prisma/client.js";
 import qdrant_client from "../db/qdrant/client.js";
-import { tools_model } from "../db/sqlite/models.js";
 
 export async function remove_availble_mcp_tools(name: string) {
-  await tools_model.destroy({
-    where: { mcp_server: name },
+  const prisma = await getPrisma();
+  
+  await prisma.tool.deleteMany({
+    where: { mcpServer: name },
   });
 
   // remove tools from memory server

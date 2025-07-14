@@ -1,8 +1,6 @@
 import { AuthorizedGraphQLContext } from "../../types/context.js";
-import { tools_model } from "../../db/sqlite/models.js";
 import qdrant_client from "../../db/qdrant/client.js";
-import logger from "../../common/logger.js";
-import { log } from "electron-builder";
+import getPrisma from "../../db/prisma/client.js";
 
 export async function areToolsSynced(
   _parent: any,
@@ -10,10 +8,10 @@ export async function areToolsSynced(
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
+  const prisma = await getPrisma();
   // check is all tools in the database are in the qdrant collection
-  const tools:any = await tools_model.findAll({
-    attributes: ["id"],
-    raw: true,
+  const tools:any = await prisma.tool.findMany({
+    select: { id: true },
   });
   const tool_ids = tools.map((tool) => tool.id);
   

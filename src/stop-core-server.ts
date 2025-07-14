@@ -1,5 +1,5 @@
 import logger from "./common/logger.js";
-import sequelize from "./db/sqlite/client.js";
+import getPrisma from "./db/prisma/client.js";
 import { stop_memory_server } from "./db/qdrant/start_memory_server.js";
 import { CronJob } from "cron";
 
@@ -151,14 +151,9 @@ export async function stop_core_server() {
 
     // Close database connections
     logger.info("🗄️ Closing database connections...");
-    try {
-      // Check if Sequelize is connected before closing
-      await sequelize.authenticate();
-      await sequelize.close();
-      logger.info("✅ Database connections closed");
-    } catch (error) {
-      logger.info("ℹ️ Database was not connected or already closed");
-    }
+    const prisma = await getPrisma();
+    await prisma.$disconnect();
+    logger.info("✅ Database connections closed");
 
     logger.info("🎉 Brofty Core Server stopped successfully");
   } catch (error) {

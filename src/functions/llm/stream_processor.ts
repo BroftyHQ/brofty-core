@@ -29,7 +29,7 @@ export class StreamProcessor {
           id,
           text: event.choices[0].delta.content || "",
           by: "AI",
-          created_at: initial_response_time.toString(),
+          createdAt: initial_response_time.toString(),
         },
       });
     }
@@ -66,7 +66,7 @@ export class StreamProcessor {
             id,
             text: this.chunk_cache,
             by: "AI",
-            created_at: initial_response_time.toString(),
+            createdAt: initial_response_time.toString(),
           },
         });
         this.chunk_cache = "";

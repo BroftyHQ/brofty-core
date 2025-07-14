@@ -1,5 +1,5 @@
+import getPrisma from "../../db/prisma/client.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
-import { mcp_server_model } from "../../db/sqlite/models.js";
 
 export async function getAvailableMCPServers(
   _parent: any,
@@ -7,7 +7,9 @@ export async function getAvailableMCPServers(
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
-  return (await mcp_server_model.findAll()).map((server: any) => {
+  const prisma = await getPrisma();
+  const servers = await prisma.mCPServer.findMany();
+  return servers.map((server: any) => {
     return {
       name: server.name,
       description: server.description,

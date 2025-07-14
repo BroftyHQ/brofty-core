@@ -1,6 +1,5 @@
+import getPrisma from "../../db/prisma/client.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
-import { message_model } from "../../db/sqlite/models.js";
-import { Op } from "sequelize";
 import authorized_user_initialization from "../authorized_user_initialization.js";
 
 const MAX_MESSAGES = 25;
@@ -11,21 +10,24 @@ export async function getMessages(
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
+  const prisma = await getPrisma();
   let messages: any[] = [];
   if (_args.cursor) {
-    messages = await message_model.findAll({
+    messages = await prisma.message.findMany({
       where: {
-        created_at: {
-          [Op.lt]: Number(_args.cursor),
+        createdAt: {
+          lt: Number(_args.cursor),
         },
       },
-      order: [["created_at", "DESC"]],
-      limit: MAX_MESSAGES,
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: MAX_MESSAGES,
     });
   } else {
-    messages = await message_model.findAll({
-      limit: MAX_MESSAGES,
-      order: [["created_at", "DESC"]],
+    messages = await prisma.message.findMany({
+      take: MAX_MESSAGES,
+      orderBy: { createdAt: "desc" },
     });
 
     if (messages.length === 0) {
@@ -36,13 +38,5 @@ export async function getMessages(
       });
     }
   }
-  return messages.map((message: any) => {
-    return {
-      id: message.id,
-      text: message.text,
-      by: message.by,
-      files: message.files,
-      created_at: message.created_at.toString(),
-    };
-  });
+  return messages;
 }

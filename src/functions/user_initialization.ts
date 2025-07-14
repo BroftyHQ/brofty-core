@@ -1,14 +1,16 @@
-import { tools_model } from "../db/sqlite/models.js";
 import logger from "../common/logger.js";
 import default_tools from "../tools/default_tools.js";
 import qdrant_client from "../db/qdrant/client.js";
 import { randomUUID } from "crypto";
+import getPrisma from "../db/prisma/client.js";
 
 const QDRANT_MANDATORY_COLLECTIONS = ["user", "tools"];
 
 // This function runs every time core server starts
 
 export default async function user_initialization(): Promise<void> {
+  const prisma = await getPrisma();
+
   // create mandatory collections in Qdrant if they do not exist
   for await (const collectionName of QDRANT_MANDATORY_COLLECTIONS) {
     await qdrant_client.getCollection(collectionName)
@@ -29,11 +31,10 @@ export default async function user_initialization(): Promise<void> {
       }
     });
   }
-  // create default tools
 
   // create tool for each tool in default_tools.json
   for (const tool of default_tools) {
-    const db_tool = await tools_model.findOne({
+    const db_tool = await prisma.tool.findUnique({
       where: {
         name: tool.name,
       },
@@ -42,16 +43,13 @@ export default async function user_initialization(): Promise<void> {
       continue;
     }
     // logger.info(`Creating tool: ${tool.name}`);
-    await tools_model.findOrCreate({
-      where: {
-        name: tool.name,
-      },
-      defaults: {
+    await prisma.tool.create({
+      data: {
         id: randomUUID(),
         name: tool.name,
         description: tool.description,
         defination: tool,
-        mcp_server: "local",
+        mcpServer: "local",
       },
     });
   }

@@ -8,6 +8,7 @@ yarn-error.log
 
 # ignore all sqlite files in any directory
 *.sqlite
+*.db
 
 #ignore all model files in any directory
 *.gguf
@@ -18,3 +19,4 @@ qdrant_storage
 # ignore all files in the static directory
 static/input
 static/output
+/electron/prisma

@@ -1,10 +1,10 @@
 import { randomUUID } from "crypto";
 import logger from "../common/logger.js";
-import { tools_model } from "../db/sqlite/models.js";
 import { syncTools } from "../functions/mutations/syncTools.js";
 import { AuthorizedGraphQLContext } from "../types/context.js";
 import getMcpClient from "./getMcpClient.js";
 import { remove_availble_mcp_tools } from "./remove_availble_mcp_tools.js";
+import getPrisma from "../db/prisma/client.js";
 
 export default async function add_availble_mcp_tools({
   name,
@@ -16,6 +16,7 @@ export default async function add_availble_mcp_tools({
   context: AuthorizedGraphQLContext;
 }) {
   let mcp = null;
+  const prisma = await getPrisma();
 
   try {
     mcp = await getMcpClient({ name });
@@ -41,12 +42,20 @@ export default async function add_availble_mcp_tools({
   }
 
   for (const tool of tools) {
-    await tools_model.upsert({
-      id: randomUUID(),
-      name: tool.name,
-      description: tool.description,
-      defination: tool,
-      mcp_server: name,
+    await prisma.tool.upsert({
+      where: { name: tool.name },
+      update: {
+        name: tool.name,
+        description: tool.description,
+        defination: tool,
+      },
+      create: {
+        id: randomUUID(),
+        name: tool.name,
+        description: tool.description,
+        defination: tool,
+        mcpServer: name,
+      },
     });
   }
   logger.info(

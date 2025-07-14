@@ -1,7 +1,6 @@
 import { nanoid } from "nanoid";
 import pubsub from "../../pubsub/index.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
-import { message_model } from "../../db/sqlite/models.js";
 import { DateTime } from "luxon";
 import generate_response from "../llm/generate_response.js";
 import {
@@ -14,10 +13,11 @@ import logger from "../../common/logger.js";
 import { ContentBlock, Message } from "../llm/types.js";
 import process_input_file from "../common/process_input_file/index.js";
 import { saveFilesWithErrorHandling } from "../common/save_files_to_static.js";
+import getPrisma from "../../db/prisma/client.js";
 
 export async function sendMessage(
   _parent: any,
-  args: { message: string; files?: FileUpload[], webSearch?: boolean },
+  args: { message: string; files?: FileUpload[]; webSearch?: boolean },
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
@@ -27,6 +27,7 @@ export async function sendMessage(
     throw new Error("Message cannot be empty");
   }
 
+  const prisma = await getPrisma();
 
   let user_message: Message = {
     role: "user",
@@ -94,13 +95,15 @@ export async function sendMessage(
       : null;
 
   // Original sendMessage logic remains unchanged
-  const message: any = await message_model.create({
-    id: user_message_id,
-    text: user_query,
-    by: "User",
-    created_at: DateTime.now().toMillis(),
-    updated_at: DateTime.now().toMillis(),
-    files: fileReferences,
+  const message: any = await prisma.message.create({
+    data: {
+      id: user_message_id,
+      text: user_query,
+      by: "User",
+      createdAt: DateTime.now().toMillis(),
+      updatedAt: DateTime.now().toMillis(),
+      files: fileReferences,
+    },
   });
 
   pubsub.publish(`MESSAGE_STREAM`, {
@@ -117,16 +120,18 @@ export async function sendMessage(
             size: file.size,
           }))
         : [],
-      created_at: message.created_at.toString(),
+      createdAt: message.createdAt.toString(),
     },
   });
 
-  const response: any = await message_model.create({
-    id: nanoid(),
-    text: "",
-    by: "AI",
-    created_at: DateTime.now().toMillis(),
-    updated_at: DateTime.now().toMillis(),
+  const response: any = await prisma.message.create({
+    data: {
+      id: nanoid(),
+      text: "",
+      by: "AI",
+      createdAt: DateTime.now().toMillis(),
+      updatedAt: DateTime.now().toMillis(),
+    },
   });
 
   pubsub.publish(`MESSAGE_STREAM`, {
@@ -135,7 +140,7 @@ export async function sendMessage(
       by: "AI",
       id: response.id,
       text: "",
-      created_at: message.created_at.toString(),
+      createdAt: message.createdAt.toString(),
     },
   });
 
@@ -144,7 +149,7 @@ export async function sendMessage(
     user_token: context.user.token,
     user_query: user_query,
     user_message: user_message,
-    initial_response_time: message.created_at.toString(),
+    initial_response_time: message.createdAt.toString(),
     tool_calls: [],
     recursion_count: 0,
     functions_suggestions: ["tool_search"],
@@ -163,6 +168,6 @@ export async function sendMessage(
           size: file.size,
         }))
       : [],
-    created_at: message.created_at.toString(),
+    createdAt: message.createdAt.toString(),
   };
 }

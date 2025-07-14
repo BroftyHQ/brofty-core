@@ -1,6 +1,6 @@
 import logger from "../../common/logger.js";
+import getPrisma from "../../db/prisma/client.js";
 import qdrant_client from "../../db/qdrant/client.js";
-import { mcp_server_model, tools_model } from "../../db/sqlite/models.js";
 import create_group_embeddings from "../../llms/create_group_embeddings.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 
@@ -11,11 +11,12 @@ export async function syncTools(
   _info: any
 ) {
   let tools = [];
+  const prisma = await getPrisma();
 
   if (_args && _args.mcp_server_name) {
-    tools = await tools_model.findAll({
+    tools = await prisma.tool.findMany({
       where: {
-        mcp_server: _args.mcp_server_name,
+        mcpServer: _args.mcp_server_name,
       },
     });
   } else {
@@ -24,7 +25,7 @@ export async function syncTools(
       wait: true,
       filter: {},
     });
-    tools = await tools_model.findAll();
+    tools = await prisma.tool.findMany();
   }
 
   // Prepare embedding inputs for batch processing
@@ -37,9 +38,9 @@ export async function syncTools(
 
     if (mcp_server !== "local") {
       // fetch MCP server description if available
-      const mcp: any = await mcp_server_model.findOne({
+      const mcp: any = await prisma.mCPServer.findUnique({
         where: { name: mcp_server },
-        attributes: ["name", "description"],
+        select: { name: true, description: true },
       });
 
       if (mcp) {

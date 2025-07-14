@@ -2,9 +2,9 @@ import { nanoid } from "nanoid";
 import logger from "../common/logger.js";
 import getOpenAIClient from "../llms/openai.js";
 import { DateTime } from "luxon";
-import { memories_model } from "../db/sqlite/models.js";
 import { randomUUID } from "crypto";
 import qdrant_client from "../db/qdrant/client.js";
+import getPrisma from "../db/prisma/client.js";
 
 export default async function createMemories({
   statements,
@@ -16,6 +16,7 @@ export default async function createMemories({
   if (!statements || statements.length === 0) {
     return false;
   }
+  const prisma = await getPrisma();
 
   const client = await getOpenAIClient(user_token);
   const response = await client.chat.completions.create({
@@ -61,7 +62,7 @@ export default async function createMemories({
       id: randomUUID(),
       content: m,
       index: "user",
-      created_at: DateTime.now().toMillis(),
+      createdAt: DateTime.now().toMillis(),
     }));
     if (memories.length === 0) {
       // logger.info("No valid memories extracted from the response.");
@@ -69,8 +70,9 @@ export default async function createMemories({
     }
 
     // Assuming memories_model is defined and ready to use
-    await memories_model.bulkCreate(memories);
-    
+    await prisma.memories.createMany({
+      data: memories,
+    });
 
     // add memories to vector database
     const vectors:any = await client.embeddings.create({

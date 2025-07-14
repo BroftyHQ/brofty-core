@@ -1,7 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { mcp_server_model } from "../db/sqlite/models.js";
 import logger from "../common/logger.js";
+import getPrisma from "../db/prisma/client.js";
 
 // Module-level cache for clients
 const clientCache: Map<string, Client> = new Map();
@@ -17,6 +17,9 @@ export default async function getMcpClient({
 }: {
   name: string;
 }): Promise<Client> {
+
+  const prisma = await getPrisma();
+
   // Check cache first
   if (clientCache.has(name)) {
     // Update last used time when retrieving from cache
@@ -27,17 +30,19 @@ export default async function getMcpClient({
   let transport: StdioClientTransport | null = null; // Declare transport for finally block
 
   try {
-    const server = await mcp_server_model.findOne({
+    const server = await prisma.mCPServer.findUnique({
       where: { name },
     });
     if (!server) {
       throw new Error(`Server with name "${name}" not found in servers`);
     }
-    const env = server.dataValues.envs || {};
+    const env = server.envs as string[] || [];
     // Pass command and args separately to avoid accidental backslash issues
     transport = new StdioClientTransport({
-      command: server.dataValues.command, // Use the command from servers
-      args: server.dataValues.args, // Use the args from servers
+      command: server.command, // Use the command from servers
+      args: server.args as string[], // Use the args from servers
+      cwd: process.cwd(), // default to current working directory
+      //@ts-ignore
       env: {
         ...process.env, // Use the env from servers, default to empty object
         ...env, // Merge with server-specific environment variables

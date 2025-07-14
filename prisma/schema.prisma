@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../prisma/generated"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        Int    @id
+  email     String @unique
+  createdAt BigInt
+  updatedAt BigInt
+}
+
+model Message {
+  id        String @id
+  text      String
+  by        String
+  createdAt BigInt
+  updatedAt BigInt
+  files     Json?
+}
+
+model UserPreference {
+  preferenceKey   String @id
+  preferenceValue String
+}
+
+model Tool {
+  id          String
+  name        String @id
+  description String
+  defination  Json
+  mcpServer   String
+}
+
+model MCPServer {
+  name        String  @id
+  description String?
+  command     String
+  args        Json?
+  envs        Json?
+  status      String  @default("stopped")
+}
+
+model MessageSummary {
+  id             String @id
+  summary        String
+  firstMessageId String
+  lastMessageId  String
+  createdAt      BigInt
+}
+
+model Memories {
+  id        String @id
+  content   String
+  index     String
+  createdAt BigInt
+}
+
+model File {
+  path      String @id
+  type      String
+  messageId String
+  filename  String
+  size      BigInt
+  mimetype  String
+  encoding  String
+  createdAt BigInt
+}

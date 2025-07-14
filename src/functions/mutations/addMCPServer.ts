@@ -1,14 +1,21 @@
 import logger from "../../common/logger.js";
-import { mcp_server_model } from "../../db/sqlite/models.js";
+import getPrisma from "../../db/prisma/client.js";
 import add_availble_mcp_tools from "../../mcp/add_availble_mcp_tools.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 
 export async function addMCPServer(
   _parent: any,
-  args: { name: string; command: string; args?: string[]; env?: string, description?: string },
+  args: {
+    name: string;
+    command: string;
+    args?: string[];
+    env?: string;
+    description?: string;
+  },
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
+  const prisma = await getPrisma();
   // if description is provided, ensure it is not longer than 200 characters
   if (args.description && args.description.length > 200) {
     throw new Error("Description must be 200 characters or less");
@@ -38,10 +45,13 @@ export async function addMCPServer(
     }
   }
 
-  mcp_server_model
-    .findOrCreate({
-      where: { name: args.name },
-      defaults: {
+  const serverExists = await prisma.mCPServer.findUnique({
+    where: { name: args.name },
+  });
+  if (!serverExists) {
+    // If the server does not exist, we can add it
+    await prisma.mCPServer.create({
+      data: {
         name: args.name,
         description: args.description,
         command: args.command,
@@ -49,16 +59,9 @@ export async function addMCPServer(
         envs: args.env ? JSON.parse(args.env) : {},
         status: "stopped", // Default status
       },
-    })
-    .then(([server, created]) => {
-      if (created) {
-        add_availble_mcp_tools({ name: args.name, first_time: true, context });
-      }
-    })
-    .catch((error) => {
-      console.error("Error adding MCP server:", error);
-      throw new Error(`Failed to add MCP server: ${error.message}`);
     });
+  }
+  add_availble_mcp_tools({ name: args.name, first_time: true, context });
 
   return {
     name: args.name,

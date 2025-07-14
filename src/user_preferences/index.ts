@@ -1,28 +1,35 @@
-import { user_preference_model } from '../db/sqlite/models.js';
+import getPrisma from "../db/prisma/client.js";
 
 export async function setPreference(key: string, value: any): Promise<void> {
+    const prisma = await getPrisma();
     // find existing preference
-    const existingPreference = await user_preference_model.findOne({
-        where: { preference_key: key },
+    const existingPreference = await prisma.userPreference.findUnique({
+        where: { 
+            preferenceKey: key
+         },
     });
     if (existingPreference) {
         // update existing preference
-        await user_preference_model.update(
-            { preference_value: value },
-            { where: { preference_key: key } }
-        );
+        await prisma.userPreference.update({
+            data: { preferenceValue: value },
+            where: { preferenceKey: key }
+        });
     } else {
         // create new preference
-        await user_preference_model.create({
-            preference_key: key,
-            preference_value: value,
+        await prisma.userPreference.create({
+            data: {
+                preferenceKey: key,
+                preferenceValue: value,
+            },
         });
     }
 }
 
+
 export async function getPreference(key: string): Promise<string | undefined> {
-    const preference:any = await user_preference_model.findOne({
-        where: { preference_key: key },
+    const prisma = await getPrisma();
+    const preference = await prisma.userPreference.findUnique({
+        where: { preferenceKey: key },
     });
-    return preference ? preference.preference_value : undefined;
+    return preference ? preference.preferenceValue : undefined;
 }

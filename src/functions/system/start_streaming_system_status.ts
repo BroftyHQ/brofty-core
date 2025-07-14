@@ -28,9 +28,9 @@ export default async function start_streaming_system_status({
       ]);
 
       const systemStatus = {
-        cpu_usage: cpu.currentLoad,
-        memory_usage: (mem.used / mem.total) * 100,
-        disk_usage: disk.length > 0 ? disk[0].use : 0,
+        cpuUsage: cpu.currentLoad,
+        memoryUsage: (mem.used / mem.total) * 100,
+        diskUsage: disk.length > 0 ? disk[0].use : 0,
         timestamp: new Date().toISOString(),
       };
 
