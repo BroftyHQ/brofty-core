@@ -41,6 +41,10 @@ const user_preference_model = sequelize.define("UserPreference", {
 });
 
 const tools_model = sequelize.define("Tool", {
+  id: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   name: {
     type: DataTypes.STRING,
     allowNull: false,

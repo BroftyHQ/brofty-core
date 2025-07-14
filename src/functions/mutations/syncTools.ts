@@ -6,17 +6,26 @@ import { AuthorizedGraphQLContext } from "../../types/context.js";
 
 export async function syncTools(
   _parent: any,
-  _args: any,
+  _args: { mcp_server_name?: string },
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
-  // remove all tools from Qdrant
-  await qdrant_client.delete("tools", {
-    wait: true,
-    filter: {},
-  });
+  let tools = [];
 
-  const tools: any = await tools_model.findAll();
+  if (_args && _args.mcp_server_name) {
+    tools = await tools_model.findAll({
+      where: {
+        mcp_server: _args.mcp_server_name,
+      },
+    });
+  } else {
+    // remove all tools from Qdrant
+    await qdrant_client.delete("tools", {
+      wait: true,
+      filter: {},
+    });
+    tools = await tools_model.findAll();
+  }
 
   // Prepare embedding inputs for batch processing
   const embedding_inputs: { id: string; text: string }[] = [];
@@ -25,7 +34,7 @@ export async function syncTools(
   for (const tool of tools) {
     const mcp_server = tool.mcp_server || "local";
     let mcp_description = "";
-    
+
     if (mcp_server !== "local") {
       // fetch MCP server description if available
       const mcp: any = await mcp_server_model.findOne({
@@ -39,17 +48,19 @@ export async function syncTools(
     }
 
     const embedding_input = `${mcp_server}\n${tool.description}${
-      mcp_description ? `\n This tool is from ${mcp_description}` : ""
+      mcp_description
+        ? `\n This tool is from ${mcp_server} - ${mcp_description}`
+        : ""
     }`;
-    
-    const tool_id = `${mcp_server}___${tool.name}`;
+
     embedding_inputs.push({
-      id: tool_id,
+      id: tool.id,
       text: embedding_input,
     });
-    
-    tool_metadata[tool_id] = {
+
+    tool_metadata[tool.id] = {
       tool,
+      name: `${mcp_server}___${tool.name}`,
       mcp_server,
       embedding_input,
     };
@@ -70,10 +81,11 @@ export async function syncTools(
   const points = res.embeddings.map((embedding, index) => {
     const metadata = tool_metadata[embedding.id];
     return {
-      id: index + 1,
+      id: embedding.id,
       vector: embedding.embedding,
       payload: {
-        name: embedding.id,
+        id: embedding.id,
+        name: metadata.name,
         mcp_server: metadata.mcp_server,
         embedding_input: metadata.embedding_input,
       },
@@ -83,9 +95,9 @@ export async function syncTools(
   // Batch upsert to Qdrant
   try {
     await qdrant_client.upsert("tools", { points });
-    logger.info(`Successfully synced ${points.length} tools to Qdrant`);
+    logger.info(`Successfully synced ${points.length} tools to memory`);
   } catch (error: any) {
-    logger.error(`Error upserting tools to Qdrant: ${error.message}`);
+    logger.error(`Error upserting tools to memory: ${error.message}`);
     return false;
   }
   return true;

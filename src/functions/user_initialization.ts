@@ -2,6 +2,7 @@ import { tools_model } from "../db/sqlite/models.js";
 import logger from "../common/logger.js";
 import default_tools from "../tools/default_tools.js";
 import qdrant_client from "../db/qdrant/client.js";
+import { randomUUID } from "crypto";
 
 const QDRANT_MANDATORY_COLLECTIONS = ["user", "tools"];
 
@@ -46,6 +47,7 @@ export default async function user_initialization(): Promise<void> {
         name: tool.name,
       },
       defaults: {
+        id: randomUUID(),
         name: tool.name,
         description: tool.description,
         defination: tool,

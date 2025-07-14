@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import logger from "../common/logger.js";
 import { tools_model } from "../db/sqlite/models.js";
 import { syncTools } from "../functions/mutations/syncTools.js";
@@ -41,6 +42,7 @@ export default async function add_availble_mcp_tools({
 
   for (const tool of tools) {
     await tools_model.upsert({
+      id: randomUUID(),
       name: tool.name,
       description: tool.description,
       defination: tool,
@@ -51,6 +53,13 @@ export default async function add_availble_mcp_tools({
     `Added available tools for MCP server '${name}': ${tools.length} tools.`
   );
   if (tools.length > 0) {
-    syncTools(null, null, context, null);
+    syncTools(
+      null,
+      {
+        mcp_server_name: name,
+      },
+      context,
+      null
+    );
   }
 }
