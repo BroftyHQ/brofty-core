@@ -2,6 +2,7 @@ import { IS_PRODUCTION } from "../common/constants.js";
 import logger from "../common/logger.js";
 import cron from "cron";
 import check_update from "./function/check_update.js";
+import cleanup_idle_mcp_clients from "./function/cleanup_idle_mcp_clients.js";
 
 export default async function start_cron(): Promise<cron.CronJob[]> {
   if (!IS_PRODUCTION) {
@@ -29,5 +30,23 @@ export default async function start_cron(): Promise<cron.CronJob[]> {
     true // waitForCompletion - ensures isCallbackRunning tracks async operations properly
   );
 
-  return [update_jobs];
+  // Schedule a job to cleanup idle MCP clients every 5 minutes
+  const mcp_cleanup_job = new cron.CronJob(
+    "*/5 * * * *", // every 5 minutes
+    async () => {
+      await cleanup_idle_mcp_clients();
+    },
+    () => {
+      logger.info("MCP client cleanup job stopped.");
+    },
+    true, // start immediately
+    "UTC", // timezone
+    null, // context
+    false, // runOnInit
+    null, // utcOffset
+    false, // unrefTimeout
+    true // waitForCompletion - ensures isCallbackRunning tracks async operations properly
+  );
+
+  return [update_jobs, mcp_cleanup_job];
 }

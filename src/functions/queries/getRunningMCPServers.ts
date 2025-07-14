@@ -12,6 +12,7 @@ export async function getRunningMCPServers(
     return {
       name: client.name,
       running_for: client.runningForMs.toString(),
+      last_used: client.lastUsedMs.toString(),
     };
   });
 }

@@ -7,6 +7,8 @@ import logger from "../common/logger.js";
 const clientCache: Map<string, Client> = new Map();
 // Track client initialization times
 const clientInitTimes: Map<string, number> = new Map();
+// Track last used times
+const clientLastUsedTimes: Map<string, number> = new Map();
 // Track transports per client for cleanup
 const clientTransports: Map<string, StdioClientTransport> = new Map();
 
@@ -17,6 +19,8 @@ export default async function getMcpClient({
 }): Promise<Client> {
   // Check cache first
   if (clientCache.has(name)) {
+    // Update last used time when retrieving from cache
+    clientLastUsedTimes.set(name, Date.now());
     return clientCache.get(name)!;
   }
   let client: Client | null = null; // Use the Client class from the SDK
@@ -53,6 +57,7 @@ export default async function getMcpClient({
       // Cleanup caches on transport close
       clientCache.delete(name);
       clientInitTimes.delete(name);
+      clientLastUsedTimes.delete(name);
       clientTransports.delete(name);
     };
 
@@ -78,6 +83,7 @@ export default async function getMcpClient({
     // Cache the client instance and transport
     clientCache.set(name, client);
     clientInitTimes.set(name, Date.now()); // Track when the client was initialized
+    clientLastUsedTimes.set(name, Date.now()); // Track when the client was last used
     clientTransports.set(name, transport); // Track transport for cleanup
     // Return the connected client instance
     return client;
@@ -96,6 +102,7 @@ export default async function getMcpClient({
     // Remove from caches if present
     clientCache.delete(name);
     clientInitTimes.delete(name);
+    clientLastUsedTimes.delete(name);
     clientTransports.delete(name);
     throw new Error(
       `Failed to launch or connect MCP client '${name}': ${
@@ -111,6 +118,7 @@ export function getInitializedClientsInfo() {
   return Array.from(clientCache.entries()).map(([name, client]) => ({
     name,
     runningForMs: now - (clientInitTimes.get(name) ?? now),
+    lastUsedMs: now - (clientLastUsedTimes.get(name) ?? now),
   }));
 }
 
@@ -130,6 +138,7 @@ export async function closeClient(name: string) {
     }
     clientCache.delete(name);
     clientInitTimes.delete(name);
+    clientLastUsedTimes.delete(name);
     clientTransports.delete(name);
     return true;
   }

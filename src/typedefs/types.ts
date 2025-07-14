@@ -35,6 +35,7 @@ type MCPServer {
 type RunningMCPServer {
   name: String!
   running_for: String!
+  last_used: String!
 }
 
 type PartialMessage {
