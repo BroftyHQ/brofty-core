@@ -12,8 +12,7 @@ async function getPrisma(): Promise<PrismaClient> {
     return cachedPrismaClient;
   }
 
-  const prismaPath = path.join(process.cwd(), "prisma", "generated");
-  console.log(prismaPath);
+  const prismaPath = path.join(process.cwd(), "prisma", "generated", "index.js");
   
   // Convert the path to a proper file:// URL for ESM import
   const prismaUrl = pathToFileURL(prismaPath).href;
