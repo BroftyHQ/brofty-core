@@ -33,11 +33,13 @@ model UserPreference {
 }
 
 model Tool {
-  id          String
-  name        String @id
+  id          String @id
+  name        String
   description String
   defination  Json
   mcpServer   String
+
+  @@unique([name, mcpServer])
 }
 
 model MCPServer {

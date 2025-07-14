@@ -83,7 +83,7 @@ const http_client_def: OpenAI.Responses.Tool = {
   type: "function",
   name: "http_client",
   description:
-    "Make HTTP requests (GET, POST, PUT, DELETE) to external APIs and websites.",
+    "Make HTTP requests (GET, POST, PUT, DELETE) to external APIs.",
   parameters: {
     type: "object",
     properties: {

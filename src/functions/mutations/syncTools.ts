@@ -1,3 +1,4 @@
+import { Tool } from "../../../prisma/generated/index.js";
 import logger from "../../common/logger.js";
 import getPrisma from "../../db/prisma/client.js";
 import qdrant_client from "../../db/qdrant/client.js";
@@ -10,10 +11,23 @@ export async function syncTools(
   context: AuthorizedGraphQLContext,
   _info: any
 ) {
-  let tools = [];
+  let tools: Tool[] = [];
   const prisma = await getPrisma();
-
   if (_args && _args.mcp_server_name) {
+     // remove all tools from Qdrant for the specific MCP server
+    await qdrant_client.delete("tools", {
+      wait: true,
+      filter: {
+        must: [
+          {
+            key: "mcp_server",
+            match: {
+              text: _args.mcp_server_name,
+            },
+          },
+        ],
+      },
+    });
     tools = await prisma.tool.findMany({
       where: {
         mcpServer: _args.mcp_server_name,
@@ -33,7 +47,7 @@ export async function syncTools(
   const tool_metadata: { [key: string]: any } = {};
 
   for (const tool of tools) {
-    const mcp_server = tool.mcp_server || "local";
+    const mcp_server = tool.mcpServer || "local";
     let mcp_description = "";
 
     if (mcp_server !== "local") {

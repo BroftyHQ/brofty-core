@@ -13,8 +13,7 @@ export default async function user_initialization(): Promise<void> {
 
   // create mandatory collections in Qdrant if they do not exist
   for await (const collectionName of QDRANT_MANDATORY_COLLECTIONS) {
-    await qdrant_client.getCollection(collectionName)
-    .catch(async (error) => {
+    await qdrant_client.getCollection(collectionName).catch(async (error) => {
       if (error.message.includes("Not Found")) {
         await qdrant_client.createCollection(collectionName, {
           vectors: {
@@ -34,22 +33,23 @@ export default async function user_initialization(): Promise<void> {
 
   // create tool for each tool in default_tools.json
   for (const tool of default_tools) {
-    const db_tool = await prisma.tool.findUnique({
+    await prisma.tool.upsert({
       where: {
-        name: tool.name,
+        name_mcpServer: {
+          name: tool.name,
+          mcpServer: "local",
+        },
       },
-    });
-    if (db_tool) {
-      continue;
-    }
-    // logger.info(`Creating tool: ${tool.name}`);
-    await prisma.tool.create({
-      data: {
+      create: {
         id: randomUUID(),
         name: tool.name,
         description: tool.description,
         defination: tool,
         mcpServer: "local",
+      },
+      update: {
+        description: tool.description,
+        defination: tool,
       },
     });
   }

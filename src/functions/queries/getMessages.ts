@@ -38,5 +38,11 @@ export async function getMessages(
       });
     }
   }
-  return messages;
+  return messages.map((message) => {
+    return {
+      ...message,
+      createdAt: message.createdAt.toString(),
+      updatedAt: message.updatedAt.toString(),
+    }
+  });
 }

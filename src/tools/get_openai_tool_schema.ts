@@ -82,7 +82,7 @@ export default async function get_openai_tool_schema({
 
   for (const tool of toolsJson) {
     const mcpServer = tool.mcpServer;
-    const toolDef = JSON.parse(tool.defination.toString() || "{}");
+    const toolDef:any = tool.defination || {};
 
     if (!toolDef.name || !toolDef.description) continue;
 

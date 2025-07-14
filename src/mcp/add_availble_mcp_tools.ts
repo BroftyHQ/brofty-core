@@ -43,7 +43,12 @@ export default async function add_availble_mcp_tools({
 
   for (const tool of tools) {
     await prisma.tool.upsert({
-      where: { name: tool.name },
+      where: {
+        name_mcpServer: {
+          name: tool.name,
+          mcpServer: name,
+        },
+      },
       update: {
         name: tool.name,
         description: tool.description,

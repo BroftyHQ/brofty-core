@@ -32,7 +32,9 @@ export default async function buildMessages({
       Before refusing a request, you must always check whether any available tools could help you complete it.
       Use the search tool broadly to discover tools related to the user's task.
       Only if you confirm that no tools are available or appropriate should you tell the user you cannot fulfill the request.
-      Remember that you are allowed to plan multi-step reasoning or tool use to achieve the user's goal whenever possible.
+      Remember that you are allowed to plan multi-step tool use to achieve the user's goal whenever possible.
+      Do not make API requests if you don't have specific endpoints and necessary API keys available.
+      If you are unsure about something, ask the user for clarification or more information.
       If you are still unable to help after searching, admit it honestly and do not invent information. Do not try to calculate or guess answers that you do not know.
       If you are unsure about something, ask the user for clarification or more information.`,
     },
