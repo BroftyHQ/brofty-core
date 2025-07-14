@@ -38,7 +38,7 @@ const default_tools = [
     type: "function",
     name: "http_client",
     description:
-      "Make HTTP requests (GET, POST, PUT, DELETE) to external APIs and websites.",
+      "Make HTTP requests (GET, POST, PUT, DELETE) to external APIs.",
     parameters: {
       type: "object",
       properties: {

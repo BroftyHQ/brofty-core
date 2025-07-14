@@ -3,7 +3,7 @@ import * as path from "path";
 import logger from "../../common/logger.js";
 import { ProcessedFile } from "../../common/file-utils.js";
 import { DateTime } from "luxon";
-import { files_model } from "../../db/sqlite/models.js";
+import getPrisma from "../../db/prisma/client.js";
 
 const STATIC_INPUT_DIR = path.join(process.cwd(), "static", "input");
 
@@ -20,6 +20,7 @@ export async function saveFilesToStaticInput(
   if (files.length === 0) {
     return [];
   }
+  const prisma = await getPrisma();
 
   // Create the directory for this message's files
   const messageDir = path.join(STATIC_INPUT_DIR, user_message_id);
@@ -37,15 +38,17 @@ export async function saveFilesToStaticInput(
       await fs.promises.writeFile(filePath, file.buffer);
 
       // write file to database
-      await files_model.create({
-        path: `input/${user_message_id}/${file.sanitizedFilename}`,
-        type: "input",
-        message_id: user_message_id,
-        filename: file.sanitizedFilename,
-        size: file.size,
-        mimetype: file.mimetype,
-        encoding: file.encoding,
-        created_at: DateTime.now().toMillis(),
+      await prisma.file.create({
+        data: {
+          path: `input/${user_message_id}/${file.sanitizedFilename}`,
+          type: "input",
+          messageId: user_message_id,
+          filename: file.sanitizedFilename,
+          size: file.size,
+          mimetype: file.mimetype,
+          encoding: file.encoding,
+          createdAt: DateTime.now().toMillis(),
+        }
       });
 
       savedPaths.push(filePath);

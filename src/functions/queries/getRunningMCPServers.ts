@@ -11,8 +11,8 @@ export async function getRunningMCPServers(
   return list.map((client) => {
     return {
       name: client.name,
-      running_for: client.runningForMs.toString(),
-      last_used: client.lastUsedMs.toString(),
+      runningFor: client.runningForMs.toString(),
+      lastUsed: client.lastUsedMs.toString(),
     };
   });
 }

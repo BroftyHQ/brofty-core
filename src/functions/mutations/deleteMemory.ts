@@ -1,5 +1,5 @@
+import getPrisma from "../../db/prisma/client.js";
 import qdrant_client from "../../db/qdrant/client.js";
-import { memories_model } from "../../db/sqlite/models.js";
 import { AuthorizedGraphQLContext } from "../../types/context.js";
 
 export async function deleteMemory(
@@ -9,7 +9,8 @@ export async function deleteMemory(
   _info: any
 ) {
   const { id } = args;
-  const memory: any = await memories_model.findOne({
+  const prisma = await getPrisma();
+  const memory: any = await prisma.memories.findUnique({
     where: {
       id,
     },
@@ -27,8 +28,8 @@ export async function deleteMemory(
     console.error("Error removing embedding from Qdrant:", error);
   }
 
-  // remove memory from SQLite
-  await memories_model.destroy({
+  // remove memory from database
+  await prisma.memories.delete({
     where: {
       id,
     },

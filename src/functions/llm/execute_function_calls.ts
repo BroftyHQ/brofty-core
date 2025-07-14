@@ -66,7 +66,7 @@ export async function executeFunctionCalls({
         id,
         text: `Calling function: ${scopedFunctionName}\n\n`,
         by: "AI",
-        created_at: initial_response_time.toString(),
+        createdAt: initial_response_time.toString(),
       },
     });
 

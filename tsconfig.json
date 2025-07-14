@@ -9,5 +9,9 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "types": ["node"]
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "prisma",
+  ]
 }

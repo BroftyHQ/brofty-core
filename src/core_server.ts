@@ -21,7 +21,6 @@ import {
 import check_docker from "./common/check_docker.js";
 import logger from "./common/logger.js";
 import start_cron from "./cron/index.js";
-import { safeDatabaseSync } from "./db/sqlite/reconnect.js";
 import { v1Router } from "./rest/index.js";
 import { setServerInstances } from "./stop-core-server.js";
 import user_initialization from "./functions/user_initialization.js";
@@ -29,6 +28,7 @@ import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 import { FILE_VALIDATION_CONFIG } from "./common/file-utils.js";
 import { fileUploadErrorHandler } from "./common/upload-error-handler.js";
 import path from "path";
+import checkDatabaseConnection from "./db/prisma/checkDatabaseConnection.js";
 
 interface MyContext {
   token?: string;
@@ -202,7 +202,7 @@ async function start_core_server() {
   // Modified server startup
   await new Promise<void>((resolve) => {
     httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
-    safeDatabaseSync()
+    checkDatabaseConnection()
       .then(async () => {
         cronJobs = await start_cron();
         user_initialization();

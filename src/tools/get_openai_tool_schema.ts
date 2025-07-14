@@ -1,12 +1,13 @@
-import { tools_model } from "../db/sqlite/models.js";
-import { Op } from "sequelize";
+import { Tool } from "../../prisma/generated/index.js";
+import getPrisma from "../db/prisma/client.js";
 
 export default async function get_openai_tool_schema({
   names,
 }: {
   names: string[];
 }) {
-  const toolsJson = [];
+  const prisma = await getPrisma();
+  const toolsJson: Tool[] = [];
   for await (const name of names) {
     let toolName = name;
     let mcp_server = null;
@@ -16,20 +17,25 @@ export default async function get_openai_tool_schema({
     }
     let tool_schema;
     if (mcp_server) {
-      
-      tool_schema = await tools_model.findOne({
+      tool_schema = await prisma.tool.findFirst({
         where: {
           name: toolName,
-          mcp_server: mcp_server,
+          mcpServer: mcp_server,
         },
-        attributes: ["defination", "mcp_server"],
+        select: {
+          defination: true,
+          mcpServer: true,
+        },
       });
     } else {
-      tool_schema = await tools_model.findOne({
+      tool_schema = await prisma.tool.findFirst({
         where: {
           name: toolName,
         },
-        attributes: ["defination", "mcp_server"],
+        select: {
+          defination: true,
+          mcpServer: true,
+        },
       });
     }
     if (!tool_schema) {
@@ -75,27 +81,27 @@ export default async function get_openai_tool_schema({
   }
 
   for (const tool of toolsJson) {
-    const mcp_server = tool.dataValues.mcp_server;
-    const tool_def = tool.dataValues.defination;
+    const mcpServer = tool.mcpServer;
+    const toolDef:any = tool.defination || {};
 
-    if (!tool_def.name || !tool_def.description) continue;
-    
-    const toolName = `${mcp_server}___${tool_def.name}`;
-    
+    if (!toolDef.name || !toolDef.description) continue;
+
+    const toolName = `${mcpServer}___${toolDef.name}`;
+
     // Skip if tool is already added
     if (addedToolNames.has(toolName)) {
       continue;
     }
     
     const params = cleanOpenAISchemaTypes(
-      JSON.parse(JSON.stringify(tool_def.parameters || tool_def.inputSchema))
+      JSON.parse(JSON.stringify(toolDef.parameters || toolDef.inputSchema))
     );
 
     openaiTools.push({
       type: "function",
       function: {
         name: toolName,
-        description: tool_def.description,
+        description: toolDef.description,
         parameters: params,
       },
     });

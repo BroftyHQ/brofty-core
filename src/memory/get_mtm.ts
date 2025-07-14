@@ -1,4 +1,4 @@
-import { message_summary_model } from "../db/sqlite/models.js";
+import getPrisma from "../db/prisma/client.js";
 
 export default async function get_mtm(): Promise<
   {
@@ -6,10 +6,13 @@ export default async function get_mtm(): Promise<
     content: string;
   }[]
 > {
-  const last_2_sumarized_messages = await message_summary_model.findAll({
-    order: [["created_at", "DESC"]],
-    limit: 2,
-    offset: 1, // Skip the most recent summary as it is already in stm
+  const prisma = await getPrisma();
+  const last_2_sumarized_messages = await prisma.messageSummary.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 2,
+    skip: 1, // Skip the most recent summary as it is already in stm
   });
   if (last_2_sumarized_messages.length === 0) {
     return [];

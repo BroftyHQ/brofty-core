@@ -1,5 +1,4 @@
 import get_response_stream from "./get_response_stream.js";
-import { message_model } from "../../db/sqlite/models.js";
 import { DateTime } from "luxon";
 import logger from "../../common/logger.js";
 import buildMessages from "./build_messages.js";
@@ -8,6 +7,7 @@ import { executeFunctionCalls } from "./execute_function_calls.js";
 import { manageLongTermMemory } from "../../memory/long_term_memory_manager.js";
 import { GenerateResponseParams } from "./types.js";
 import pubsub from "../../pubsub/index.js";
+import getPrisma from "../../db/prisma/client.js";
 
 export default async function generate_response({
   id,
@@ -20,6 +20,7 @@ export default async function generate_response({
   functions_suggestions = [],
   enable_web_search = false,
 }: GenerateResponseParams) {
+  const prisma = await getPrisma();
   if (recursion_count > 0) {
     pubsub.publish(`MESSAGE_STREAM`, {
       messageStream: {
@@ -27,7 +28,7 @@ export default async function generate_response({
         id,
         text: `\n\`Agent Execution Iteration ${recursion_count}\`\n`,
         by: "AI",
-        created_at: initial_response_time.toString(),
+        createdAt: initial_response_time.toString(),
       },
     });
   }
@@ -41,16 +42,16 @@ export default async function generate_response({
         id,
         text: `Recursion limit exceeded. Skipping further processing`,
         by: "AI",
-        created_at: DateTime.now().toMillis(),
+        createdAt: DateTime.now().toMillis(),
       },
     });
-    await message_model.update(
-      {
+    await prisma.message.update({
+      where: { id },
+      data: {
         text: `Skipped - exceeded max recursion calls`,
-        updated_at: +new Date(),
-      },
-      { where: { id } }
-    );
+        updatedAt: +new Date(),
+      }
+    });
     logger.warn(
       `Recursion limit exceeded for message ID ${id}. Skipping further processing.`
     );
@@ -130,22 +131,22 @@ export default async function generate_response({
 
   // Update message with final text
   if (finalText.trim().length > 0) {
-    const exisitingMessage: any = await message_model.findOne({
+    const exisitingMessage: any = await prisma.message.findUnique({
       where: { id },
-      attributes: ["text"],
+      select: { text: true },
     });
 
     if (!exisitingMessage) {
       return;
     }
 
-    await message_model.update(
-      {
+    await prisma.message.update({
+      where: { id },
+      data: {
         text: `${exisitingMessage.text} ${finalText}`,
-        updated_at: DateTime.now().toMillis(),
-      },
-      { where: { id } }
-    );
+        updatedAt: DateTime.now().toMillis(),
+      }
+    });
     // long term memory management
     await manageLongTermMemory(user_token);
   }

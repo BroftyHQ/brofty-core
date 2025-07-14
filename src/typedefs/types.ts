@@ -6,7 +6,7 @@ type Message {
   text: String!
   by: String!
   files: [MessageFile]
-  created_at: String!
+  createdAt: String!
 }
 
 type MessageFile {
@@ -14,14 +14,14 @@ type MessageFile {
   mimetype: String!
   path: String!
   size: Int!
-  created_at: String!
+  createdAt: String!
 }
 
 type LocalLLMStatus {
-  is_downloading: Boolean!
+  isDownloading: Boolean!
   progress: String
   error: String
-  is_ready: Boolean!
+  isReady: Boolean!
 }
 
 type MCPServer {
@@ -34,8 +34,8 @@ type MCPServer {
 
 type RunningMCPServer {
   name: String!
-  running_for: String!
-  last_used: String!
+  runningFor: String!
+  lastUsed: String!
 }
 
 type PartialMessage {
@@ -44,19 +44,19 @@ type PartialMessage {
   text: String!
   by: String!
   files: [MessageFile]
-  created_at: String!
+  createdAt: String!
 }
 
 type SystemStatus {
-  cpu_usage: Float
-  memory_usage: Float
-  disk_usage: Float
+  cpuUsage: Float
+  memoryUsage: Float
+  diskUsage: Float
 }
 
 type Tool {
   name: String!
   description: String!
-  mcp_server: String
+  mcpServer: String
 }
 
 type SystemLog {
@@ -69,7 +69,7 @@ type UserMemory {
   id: ID!
   content: String!
   index: String!
-  created_at: String!
+  createdAt: String!
 }
 
 type File {

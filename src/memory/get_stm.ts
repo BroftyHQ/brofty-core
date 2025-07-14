@@ -1,4 +1,4 @@
-import { message_model } from "../db/sqlite/models.js";
+import getPrisma from "../db/prisma/client.js";
 
 export default async function get_stm(disable = false): Promise<
   {
@@ -9,10 +9,13 @@ export default async function get_stm(disable = false): Promise<
   if (disable) {
     return [];
   }
-  const last_20_messages: any = await message_model.findAll({
-    order: [["created_at", "DESC"]],
-    limit: 20,
-    offset: 2, // Skip the last 2 message which is usually latest user input and uncompleted AI response
+  const prisma = await getPrisma();
+  const last_20_messages: any = await prisma.message.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 20,
+    skip: 2, // Skip the last 2 message which is usually latest user input and uncompleted AI response
   });
   let final_stm = [];
   for await (const message of last_20_messages.reverse()) {
