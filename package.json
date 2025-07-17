@@ -40,7 +40,7 @@
     "@as-integrations/express5": "^1.1.0",
     "@graphql-tools/schema": "^10.0.23",
     "@modelcontextprotocol/sdk": "^1.13.1",
-    "@prisma/client": "^6.11.1",
+    "@prisma/client": "^6.12.0",
     "@qdrant/js-client-rest": "^1.14.1",
     "cors": "^2.8.5",
     "cron": "^4.3.1",
@@ -69,7 +69,7 @@
     "cross-env": "^7.0.3",
     "electron": "^36.4.0",
     "electron-builder": "^26.0.12",
-    "prisma": "^6.11.1",
+    "prisma": "^6.12.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3"
   }

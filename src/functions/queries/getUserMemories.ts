@@ -12,5 +12,8 @@ export async function getUserMemories(
     orderBy: { createdAt: "desc" },
     take: 100,
   });
-  return memories;
+  return memories.map((memory) => ({
+    ...memory,
+    createdAt: memory.createdAt.toString(),
+  }));
 }
